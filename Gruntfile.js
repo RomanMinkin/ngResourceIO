@@ -10,8 +10,6 @@ module.exports = function(grunt) {
         fs        = require('fs.extra'),
         async     = require('async'),
         path      = require('path'),
-        internals = require('./server/internals.js'),
-        config    = internals.getConfig(),
         // shjs = require('shelljs');
         server;
 
@@ -23,7 +21,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-nodeunit');
     grunt.loadNpmTasks('grunt-karma');
-    grunt.loadNpmTasks('grunt-env');
 
     // Project configuration.
     grunt.initConfig({
@@ -188,7 +185,7 @@ module.exports = function(grunt) {
                 options: {
                     configFile: './configs/karma-e2e.conf.js',
                     proxies: {
-                        '/': 'http://' + config.get("SERVER:HOST") + ":" + config.get("SERVER:PORT") + "/"
+                        '/': 'http://' + ":"  + "/"
                     }
                 }
             },
@@ -197,7 +194,7 @@ module.exports = function(grunt) {
                 options: {
                     configFile: './configs/karma-e2e.conf.js',
                     proxies: {
-                        '/': ' http://' + config.get("SERVER:HOST") + ":" + config.get("SERVER:PORT") + "/"
+                        '/': ' http://' + ":"  + "/"
                     }
                 }
             },
@@ -241,7 +238,7 @@ module.exports = function(grunt) {
     });
 
     /* bower */
-    grunt.registerTask('bower', 'Download client liblalies from Bower repository and copy them across the project', ['clean:bower_components', 'bower-install', 'clean:client-code-libs', 'bower-copy', 'clean:bower_components']);
+    grunt.registerTask('bower', 'Download client liblalies from Bower repository and copy them across the project', ['clean:bower_components', 'bower-install', 'clean:libs', 'bower-copy', 'clean:bower_components']);
 
     /* release build tasks */
     // grunt.registerTask('release', 'Tag and perform a release', ['prepare-release', 'dist', 'perform-release']);

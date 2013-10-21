@@ -1,0 +1,9 @@
+{
+  "name": "ngresourceio",
+  "version": "0.0.1",
+  "dependencies": {
+    "jquery": "1.9.1",
+    "angular": "1.2.0-rc.3",
+    "angular-mocks": "1.2.0-rc.3"
+  }
+}
