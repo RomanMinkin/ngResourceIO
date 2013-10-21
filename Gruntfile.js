@@ -34,21 +34,34 @@ module.exports = function(grunt) {
         pkg: grunt.file.readJSON('package.json'),
         buildtag: '-dev-' + grunt.template.today('yyyy-mm-dd'),
         meta: {
-            banner: '/**\n' + ' * <%= pkg.description %>\n' + ' * @version v<%= pkg.version %><%= buildtag %>\n' + ' * @link <%= pkg.homepage %>\n' + ' * @license MIT License, http://www.opensource.org/licenses/MIT\n' + ' */'
+            banner: [
+                '/*!\n',
+                ' * <%= pkg.description %>\n',
+                ' *\n',
+                ' * @version v<%= pkg.version %><%= buildtag %>\n',
+                ' * @link <%= pkg.homepage %>\n',
+                ' * @author <%= pkg.author %>\n',
+                ' * @license MIT License, http://www.opensource.org/licenses/MIT\n',
+                ' */\n',
+            ].join('')
         },
         clean: {
             bower_components: ['<%= dirs.bower_components %>'],
-            libs: ['libs/*']
+            libs            : ['libs/*'],
+            build           : ['<%= builddir %>']
         },
         build: {
             dest: '<%= builddir %>/<%= pkg.name %>.js'
         },
-        copy: {
-            main: {
-                files: [
-                    { expand: true, filter: 'isFile',  cwd: 'src/', src: ['**'], dest: '<%= builddir %>/'}
-                ]
-            }
+        concat: {
+            options: {
+                separator: ';',
+                banner: '<%= meta.banner %>\n'
+            },
+            dist: {
+                src: ['src/*.js'],
+                dest: '<%= builddir %>/<%= pkg.name %>.js'
+            },
         },
         uglify: {
             options: {
@@ -64,27 +77,6 @@ module.exports = function(grunt) {
             files: ['<%= pkg.name %>.js', '<%= pkg.name %>.min.js'],
             src  : '<%= builddir %>',
             dest : 'release'
-        },
-        env: {
-            options: {
-                /*
-                    Shared Options Hash
-                    NODE_ENV  : 'local',                     // ['local', 'development', 'staging', 'production'];
-                    SS_ENV    : null,                        // By default setted the same as NODE_ENV, 'production' will tell Server to pack assets
-                    TEST_MODE : true,                        // ['', 'true', '1']    if true, test database will be used and it should be specified
-                 */
-            },
-            local: {
-                NODE_ENV : 'local',
-                TEST_MODE: true
-            },
-            staging: {
-                NODE_ENV: 'staging',
-                TEST_MODE: true
-            },
-            production: {
-                NODE_ENV: 'production'
-            }
         },
         jshint: {
             options: {
@@ -412,19 +404,6 @@ module.exports = function(grunt) {
             if (key.indexOf(__dirname + '/node_modules/') === -1) {
                 delete require.cache[key];
             }
-        }
-    }
-
-    function replaceInFile(file, search, replacement) {
-        var result, data;
-
-        data = fs.readFileSync(file, 'utf8');
-
-        if (data) {
-            result = data.split(search).join(replacement);
-            return fs.writeFileSync(file, result, 'utf8');
-        } else {
-            return false;
         }
     }
 };

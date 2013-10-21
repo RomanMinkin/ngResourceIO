@@ -3,6 +3,7 @@
   "description": "Module for Angular.js framework, a factory which creates a resource object that lets interact with server-side data sources by using  WebSockets as  transport layer.",
   "version": "0.0.1",
   "author": "Roman Minkin <minkinroman@gmail.com>",
+  "homepage": "https://github.com/RomanMinkin/ngResourceIO",
   "engines": {
     "node": ">= 0.8.0",
     "npm": ">= 1.3.1"
