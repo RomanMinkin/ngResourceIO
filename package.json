@@ -1,0 +1,37 @@
+{
+    "name": "ngResourceIO",
+    "description": "Module for Angular.js framework, a factory which creates a resource object that lets interact with server-side data sources by using  WebSockets as  transport layer.",
+    "version": "0.0.1",
+    "author": "Roman Minkin <minkinroman@gmail.com>",
+    "engines": {
+        "node": ">= 0.8.0",
+        "npm": ">= 1.3.1"
+    },
+    "scripts": {
+        "test": "grunt"
+    },
+    "dependencies": {},
+    "devDependencies": {
+        "grunt": "~0.4.1",
+        "grunt-contrib-uglify": "~0.2.2",
+        "grunt-contrib-jshint": "0.6.3",
+        "grunt-contrib-watch": "~0.5.3",
+        "grunt-contrib-nodeunit": "~0.2.1",
+        "grunt-karma": "~0.6.2",
+        "shelljs": "~0.1.4",
+        "faithful-exec": "~0.1.0",
+        "nodeunit": "~0.8.1",
+        "karma-script-launcher": "~0.1.0",
+        "karma-chrome-launcher": "~0.1.0",
+        "karma-firefox-launcher": "~0.1.0",
+        "karma-html2js-preprocessor": "~0.1.0",
+        "karma-jasmine": "~0.1.3",
+        "karma-requirejs": "~0.1.0",
+        "karma-coffee-preprocessor": "~0.1.0",
+        "karma-phantomjs-launcher": "~0.1.0",
+        "karma": "~0.10.2",
+        "karma-ng-scenario": "~0.1.0",
+        "karma-junit-reporter": "~0.1.0",
+        "fs.extra": "~1.2.1"
+    }
+}
