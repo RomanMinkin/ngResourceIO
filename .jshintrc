@@ -22,9 +22,12 @@
     "onevar"  : true,
     "unused"  : true,
     "multistr": true,
+    "browser" : false,
     "globals" :
     {
         "browser"    : false,
+        "element"    : false,
+        "module"     : false,
         "expect"     : false,
         "inject"     : false,
         "it"         : false,

@@ -1,6 +1,6 @@
-"use strict";
 
 describe('filter', function(){
+	"use strict";
     beforeEach(module('DiggyDoDo'));
 
     describe('numberToArray', function(){

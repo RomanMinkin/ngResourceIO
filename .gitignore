@@ -1,3 +1,4 @@
+.DS_Store
 lib-cov
 *.seed
 *.log
@@ -16,3 +17,5 @@ node_modules
 
 build
 bower_components
+
+test/apps/socketstream/node_modules

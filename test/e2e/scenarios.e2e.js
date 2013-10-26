@@ -1,32 +1,37 @@
-'use strict';
-
 /* Docs
    http://docs.angularjs.org/guide/dev_guide.e2e-testing
  */
 
-describe('my app', function() {
+describe('app', function() {
+    "use strict";
 
     beforeEach(function() {
-        browser().navigateTo('/');
+        try {
+            browser().navigateTo('/');
+
+        } catch(e) {
+            console.log('e', e);
+        }
         // sleep(1);
     });
 
 
-    it('should automatically redirect to /view1 when location hash/fragment is empty', function() {
+    it('should load index page /', function() {
         expect(browser().location().url()).toBe("/");
+        expect(element('[data-ng-view]').text()).toBe('index template');
     });
 
 
-    describe('/login', function() {
+    // describe('/', function() {
 
-        beforeEach(function() {
-            browser().navigateTo('/login');
-        });
+    //     beforeEach(function() {
+    //         browser().navigateTo('/login');
+    //     });
 
 
-        it('should automatically redirect to /view1 when location hash/fragment is empty', function() {
-            expect(browser().location().url()).toBe("/login");
-        });
+    //     it('should automatically redirect to /view1 when location hash/fragment is empty', function() {
+    //         expect(browser().location().url()).toBe("/login");
+    //     });
 
         // it('should render view1 when user navigates to /view1', function() {
         // expect(element('[ng-view] p:first').text()).
@@ -48,5 +53,5 @@ describe('my app', function() {
         //       toMatch(/partial for view 2/);
         //   });
 
-    });
+    // });
 });

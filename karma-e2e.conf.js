@@ -8,7 +8,7 @@ module.exports = function(config) {
     config.set({
 
         /* base path, that will be used to resolve files and exclude */
-        basePath: '../',
+        basePath: './',
 
         /*
          *  The base url, where Karma runs.
@@ -59,7 +59,7 @@ module.exports = function(config) {
          *  CLI --browsers Chrome,Firefox,Safari
          *  browsers: [process.env.TRAVIS ? 'Firefox' : 'Firefox'],
          */
-        browsers: ['Firefox'],
+        browsers: ['Chrome'],
 
         /*
          *  use dots reporter, as travis terminal does not support escaping sequences
@@ -101,5 +101,5 @@ module.exports = function(config) {
             suite: 'e2e'
         }
 
-    })
-}
+    });
+};

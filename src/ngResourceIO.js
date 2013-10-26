@@ -1,4 +1,4 @@
-/*global window, angular*/
+/*global window, angular, console*/
 
 (function( angular ){
     "use strict";
