@@ -12,7 +12,8 @@ module.exports = function(grunt) {
         util      = require('util'),
         path      = require('path'),
         shjs      = require('shelljs'),
-        ss;
+        ss,
+        io;
 
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-clean');
@@ -26,17 +27,18 @@ module.exports = function(grunt) {
 
     // Project configuration.
     grunt.initConfig({
-        builddir: 'build',
-        testdir : 'test',
         dirs: {
+            'build'                : 'build',
             'test'                 : 'test',
             'bowerComponents'      : 'bower_components',
             'test_libs'            : '<%= dirs.test %>/libs',
             'jquery'               : '<%= dirs.test_libs %>',
             'angular'              : '<%= dirs.test_libs %>',
             'angular-route'        : '<%= dirs.test_libs %>',
-            'app_socketstream'     : 'test/apps/socketstream',
-            'app_socketstream_libs': '<%= dirs.app_socketstream %>/client/code/libs'
+            'app_socketstream'     : '<%= dirs.test %>/apps/socketstream',
+            'app_socketstream_libs': '<%= dirs.app_socketstream %>/client/code/libs',
+            'app_socketio'         : '<%= dirs.test %>/apps/socket.io',
+            'app_socketio_libs'    : '<%= dirs.app_socketio %>/static'
         },
         pkg: grunt.file.readJSON('package.json'),
         buildtag: '-dev-' + grunt.template.today('yyyy-mm-dd'),
@@ -54,12 +56,12 @@ module.exports = function(grunt) {
         },
         clean: {
             bowerComponents: ['<%= dirs.bowerComponents %>'],
-            testLibs           : ['<%= dirs.test_libs %>/*'],
+            testLibs       : ['<%= dirs.test_libs %>/*'],
             links          : ['<%= dirs.app_socketstream_libs %>/*'],
-            build          : ['<%= builddir %>']
+            build          : ['<%= dirs.build %>']
         },
         build: {
-            dest: '<%= builddir %>/<%= pkg.name %>.js'
+            dest: '<%= dirs.build %>/<%= pkg.name %>.js'
         },
         concat: {
             options: {
@@ -69,7 +71,7 @@ module.exports = function(grunt) {
             },
             dist: {
                 src: ['src/*.js'],
-                dest: '<%= builddir %>/<%= pkg.name %>.js'
+                dest: '<%= dirs.build %>/<%= pkg.name %>.js'
             },
         },
         uglify: {
@@ -78,13 +80,13 @@ module.exports = function(grunt) {
             },
             build: {
                 files: {
-                    '<%= builddir %>/<%= pkg.name %>.min.js': ['<banner:meta.banner>', '<%= build.dest %>']
+                    '<%= dirs.build %>/<%= pkg.name %>.min.js': ['<banner:meta.banner>', '<%= build.dest %>']
                 }
             }
         },
         release: {
             files: ['<%= pkg.name %>.js', '<%= pkg.name %>.min.js'],
-            src  : '<%= builddir %>',
+            src  : '<%= dirs.build %>',
             dest : 'release'
         },
         jshint: {
@@ -104,6 +106,7 @@ module.exports = function(grunt) {
                         '<%= dirs.test_libs %>/**',
                         '<%= dirs.app_socketstream_libs %>/**',
                         '<%= dirs.app_socketstream %>/node_modules/**',
+                        '<%= dirs.app_socketio_libs%>/**',
                     ]
                 }, grunt.file.readJSON('.jshintrc')),
                 files: {
@@ -119,75 +122,75 @@ module.exports = function(grunt) {
                 atBegin  : true,
                 interrupt: true
             },
-            server: {
-                files: ['*.js', 'server/**/*.js'],
-                tasks: ['start:server', 'wait'],
-
-            },
-            testServer: {
-                files: ['test/**/*.js', '*.js', 'server/**/*.js'],
-                tasks: ['nodeunit:all'],
-
-            },
-            testServerRoot: {
-                files: ['test/**/*.js', '*.js', 'server/*.js'],
-                tasks: ['nodeunit:root'],
-
-            },
-            testServerModels: {
-                files: ['test/unit/server/models/**/*.js', 'server/**/*.js'],
-                tasks: ['nodeunit:models']
-            },
-            testServerControllers: {
-                files: ['test/unit/server/controllers/**/*.js', 'server/**/*.js'],
-                tasks: ['nodeunit:controllers']
-            },
-            testServerPrc: {
-                files: ['test/unit/server/rpc/**/*.js', 'server/**/*.js'],
-                tasks: ['nodeunit:rpc']
-            },
-            testClient: {
-                files: ['client/code/**/*.js', 'test/unit/client/**/*.spec.js'],
-                tasks: ['karma:unitBackground:run']
-            },
             e2eSocketStream: {
                 files: ['src/*.js'],
-                tasks: ['karma:e2eSocketStream:run']
+                tasks: ['karma:e2eSocketStreamBackground:run']
+            },
+            e2eSocketIO: {
+                files: ['src/*.js'],
+                tasks: ['karma:e2eSocketIOBackground:run']
             }
-        },
-        connect: {
-            server: {}
         },
         karma: {
             options: {
                 hostname: os.hostname(),
                 configFile: './configs/karma.conf.js',
             },
-            unit: {
-                singleRun: true,
-                browsers: [grunt.option('browser') || 'PhantomJS' || 'Firefox' || 'Chrome']
-            },
             e2eSocketStream: {
-                singleRun: false,
+                singleRun: true,
                 options: {
                     configFile: './karma-e2e.conf.js',
+                    files: [
+                        'test/e2e/socketstream/**/*.e2e.js',
+                        'test/e2e/common/**/*.e2e.js',
+                    ],
                     proxies: {
                         '/': 'http://localhost:3000/'
                     }
-                }
+                },
+                browsers: [ [process.env.TRAVIS ? 'PhantomJS' : grunt.option('browsers') || 'Chrome']]
             },
             e2eSocketStreamBackground: {
                 background: true,
                 options: {
                     configFile: './karma-e2e.conf.js',
+                    files: [
+                        'test/e2e/socketstream/**/*.e2e.js',
+                        'test/e2e/common/**/*.e2e.js',
+                    ],
                     proxies: {
                         '/': 'http://localhost:3000/'
                     }
-                }
+                },
+                browsers: [ [process.env.TRAVIS ? 'PhantomJS' : grunt.option('browsers') || 'Chrome']]
             },
-            unitBackground: {
+            e2eSocketIO: {
+                singleRun: true,
+                options: {
+                    configFile: './karma-e2e.conf.js',
+                    files: [
+                        'test/e2e/socket.io/**/*.e2e.js',
+                        'test/e2e/common/**/*.e2e.js',
+                    ],
+                    proxies: {
+                        '/': 'http://localhost:3001/'
+                    }
+                },
+                browsers: [ [process.env.TRAVIS ? 'PhantomJS' : grunt.option('browsers') || 'Chrome']]
+            },
+            e2eSocketIOBackground: {
                 background: true,
-                browsers: [grunt.option('browser') || 'PhantomJS']
+                options: {
+                    configFile: './karma-e2e.conf.js',
+                    files: [
+                        'test/e2e/socket.io/**/*.e2e.js',
+                        'test/e2e/common/**/*.e2e.js',
+                    ],
+                    proxies: {
+                        '/': 'http://localhost:3001/'
+                    }
+                },
+                browsers: [ [process.env.TRAVIS ? 'PhantomJS' : grunt.option('browsers') || 'Chrome']]
             }
         },
         symlink: {
@@ -199,6 +202,13 @@ module.exports = function(grunt) {
                         src: ['*.js'],
                         dest: '<%= dirs.app_socketstream_libs %>',
                         filter: 'isFile'
+                    },
+                    {
+                        expand: true,
+                        cwd: path.join('<%= dirs.test_libs %>'),
+                        src: ['*.js'],
+                        dest: '<%= dirs.app_socketio_libs %>',
+                        filter: 'isFile'
                     }
                 ]
             },
@@ -209,6 +219,13 @@ module.exports = function(grunt) {
                         cwd: 'src',
                         src: ['*.js'],
                         dest: '<%= dirs.app_socketstream_libs %>',
+                        filter: 'isFile'
+                    },
+                    {
+                        expand: true,
+                        cwd: 'src',
+                        src: ['*.js'],
+                        dest: '<%= dirs.app_socketio_libs %>',
                         filter: 'isFile'
                     }
                 ]
@@ -222,18 +239,20 @@ module.exports = function(grunt) {
      */
     grunt.renameTask('watch', 'monitor');
 
-    grunt.registerTask('default',                                                 ['jshint']);
+    grunt.registerTask('default',                                                ['jshint', 'test']);
 
     /* Dev pre-test tasks */
     grunt.registerTask('dev:install',                                            ['clean:cache', 'bower', 'install:modules:socketstream', 'clean:links', 'symlink:libs']);
     grunt.registerTask('dev:update:libs',                                        ['bower', 'clean:links', 'symlink:libs']);
 
     /* Test tasks */
-    // grunt.registerTask('test',                                                    []);
-    grunt.registerTask('test:socketstream',                                     ['start:socketstream', 'karma:e2eSocketStream']);
+    grunt.registerTask('test', 'Runs all the test once',                         ['test:socketstream', 'test:socket.io']);
+    grunt.registerTask('test:socketstream', 'Single run end-to-end tests for SocketStream App', ['start:socketstream', 'karma:e2eSocketStream']);
+    grunt.registerTask('test:socket.io', 'Single run end-to-end tests for Socket.io App', ['start:socket.io', 'karma:e2eSocketIO']);
 
     /* Watch tasks */
-    grunt.registerTask('watch:test:socketstream', 'Run end-to-end tests and watching changes',                    ['start:socketstream', 'karma:e2eSocketStreamBackground', 'monitor:e2eSocketStream']);
+    grunt.registerTask('watch:test:socketstream', 'Run end-to-end tests and watching changes for SocketStream App', ['start:socketstream', 'karma:e2eSocketStreamBackground', 'delay', 'monitor:e2eSocketStream']);
+    grunt.registerTask('watch:test:socket.io', 'Run end-to-end tests and watching changes for Socket.io App', ['start:socket.io', 'karma:e2eSocketIOBackground', 'delay', 'monitor:e2eSocketIO']);
 
     grunt.registerTask('clean:cache', 'Clean node modules cache', function() {
         clearCache();
@@ -241,18 +260,17 @@ module.exports = function(grunt) {
 
     /* release build tasks */
     // grunt.registerTask('release', 'Tag and perform a release', ['prepare-release', 'dist', 'perform-release']);
-    // grunt.registerTask('dev', 'Run dev server and watch for changes', ['build', 'connect', 'karma:unitBackground', 'watch']);
 
     /* bower */
-    grunt.registerTask('bower', 'Download client liblalies from Bower repository and copy them across the project', ['clean:bowerComponents', 'bower-install', 'clean:testLibs', 'bower-copy', 'clean:bowerComponents']);
+    grunt.registerTask('bower', 'Download client libraries from Bower repository and copy them across the project', ['clean:bowerComponents', 'bower-install', 'clean:testLibs', 'bower-copy', 'clean:bowerComponents']);
 
 
     /* Helper tasks */
-    grunt.registerTask('start:socketstream', 'Run dev server once, uses for test porpuse', function() {
+    grunt.registerTask('start:socketstream', 'Run SocketStream test server for the test porpuse', function() {
         var done         = this.async(),
             app_path     = grunt.config.get('dirs.app_socketstream'),
             start_script = 'app.js',
-            cmd          = util.format('cd  %s && node %s', app_path, start_script);
+            cmd          = util.format('cd %s && node %s', app_path, start_script);
 
         if (ss) {
             ss = null;
@@ -260,7 +278,22 @@ module.exports = function(grunt) {
 
         ss = shjs.exec(cmd, {async:true});
 
-        setTimeout(done, 0);
+        done();
+    });
+
+    grunt.registerTask('start:socket.io', 'Run Socket.io/Express test server for the test porpuse', function() {
+        var done         = this.async(),
+            app_path     = grunt.config.get('dirs.app_socketio'),
+            start_script = 'app.js',
+            cmd          = util.format('cd %s && node %s', app_path, start_script);
+
+        if (io) {
+            io = null;
+        }
+
+        io = shjs.exec(cmd, {async:true});
+
+        done();
     });
 
     grunt.registerTask('install:modules:socketstream', 'instal SocketStream framework for 2e2 tests', function() {
@@ -354,9 +387,9 @@ module.exports = function(grunt) {
 
     });
 
-    grunt.registerTask('delay', 'test for wating, it should never call done()', function() {
+    grunt.registerTask('delay', 'set process delay fro 2000ms, can be overwritten in CLI by --delay 1000 ', function() {
         var done = this.async();
-        setTimeout(done, 2000);
+        setTimeout(done, grunt.option('delay') || 2000);
     });
 
     grunt.registerTask('prepare-release', function() {
@@ -374,7 +407,7 @@ module.exports = function(grunt) {
                 throw 'Tag \'' + version + '\' already exists';
             }
             grunt.config('buildtag', '');
-            grunt.config('builddir', 'release');
+            grunt.config('dirs.build', 'release');
         }));
     });
 
@@ -382,7 +415,7 @@ module.exports = function(grunt) {
         grunt.task.requires(['prepare-release', 'dist']);
 
         var version = grunt.config('pkg.version'),
-            releasedir = grunt.config('builddir');
+            releasedir = grunt.config('dirs.build');
         promising(this,
             system('git add \'' + releasedir + '\'').then(function() {
             return system('git commit -m \'release ' + version + '\'');
@@ -432,4 +465,23 @@ module.exports = function(grunt) {
             }
         }
     }
+
+    /**
+     * Kills SocketStream's application, if exists ('ss')
+     * @return {Void}
+     */
+    function killApps() {
+        if (ss && ss.kill && typeof ss.kill === 'function') {
+            process.kill(ss.pid+1); // killing the SocketStream's sub-child process 'node app.js'
+            process.kill(ss.pid);   // killing the SocketStream's child process 'cd ...'
+        }
+        if (io && io.kill && typeof io.kill === 'function') {
+            process.kill(io.pid+1); // killing the SocketStream's sub-child process 'node app.js'
+            process.kill(io.pid);   // killing the SocketStream's child process 'cd ...'
+        }
+    }
+
+    process.on('exit', function() {
+        killApps();
+    });
 };

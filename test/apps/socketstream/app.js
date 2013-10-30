@@ -24,6 +24,13 @@ ss.client.set({ browserifyExcludePaths: ['app'] });
 // Use server-side compiled Hogan (Mustache) templates. Others engines available
 ss.client.templateEngine.use('angular.js');
 
+// engineio setup to debuging
+ss.ws.transport.use('engineio', {
+    server: function(io) {
+        io.set('log level', 5);
+    }
+});
+
 // Start web server
 var server = http.Server(ss.http.middleware);
 server.listen(3000);

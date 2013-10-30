@@ -1,6 +1,6 @@
 /*global angular, window*/
 
-(function(window){
+(function(){
     "use strict";
 
     var app = window.app = angular.module('app', [
@@ -12,9 +12,9 @@
         function($routeProvider,   $locationProvider,   resourceIOconfigProvider) {
 
         resourceIOconfigProvider.setConfig({
-            SOCKET_INSTANCE : 'ss',
-            SOCKET_EVENT_METHOD : 'event',
-            SOCKET_RPC_METHOD : 'rpc',
+            SOCKET_INSTANCE : 'socket',
+            SOCKET_EVENT_METHOD : 'emit',
+            // SOCKET_RPC_METHOD : 'rpc',
             SOCKET_RPC_PREFFIX : 'pubsub'
         });
 
@@ -37,8 +37,9 @@
     app.controller('testController',
         [        'resourceIO',
         function(ResourceIO) {
-            var resource = new ResourceIO('1');
+            // var resource = new ResourceIO('1');
 
-            resource = null;
+            // resource.find();
+
     }]);
-})(window);
+})();

@@ -59,7 +59,7 @@ module.exports = function(config) {
          *  CLI --browsers Chrome,Firefox,Safari
          *  browsers: [process.env.TRAVIS ? 'Firefox' : 'Firefox'],
          */
-        browsers: ['Chrome'],
+        browsers: [process.env.TRAVIS ? 'PhantomJS' : 'Chrome'],
 
         /*
          *  use dots reporter, as travis terminal does not support escaping sequences
@@ -79,6 +79,7 @@ module.exports = function(config) {
             'karma-junit-reporter',
             'karma-chrome-launcher',
             'karma-firefox-launcher',
+            'karma-phantomjs-launcher',
             'karma-jasmine',
             'karma-ng-scenario'
         ],
