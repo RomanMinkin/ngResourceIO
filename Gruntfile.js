@@ -35,6 +35,7 @@ module.exports = function(grunt) {
             'jquery'               : '<%= dirs.test_libs %>',
             'angular'              : '<%= dirs.test_libs %>',
             'angular-route'        : '<%= dirs.test_libs %>',
+            "angular-mocks"        : '<%= dirs.test_libs %>',
             'app_socketstream'     : '<%= dirs.test %>/apps/socketstream',
             'app_socketstream_libs': '<%= dirs.app_socketstream %>/client/code/libs',
             'app_socketio'         : '<%= dirs.test %>/apps/socket.io',
@@ -122,6 +123,10 @@ module.exports = function(grunt) {
                 atBegin  : true,
                 interrupt: true
             },
+            unit: {
+                files: ['src/**/*.js', 'test/unit/**/*.js'],
+                tasks: ['karma:unitBackground:run']
+            },
             e2eSocketStream: {
                 files: ['src/*.js'],
                 tasks: ['karma:e2eSocketStreamBackground:run']
@@ -134,7 +139,15 @@ module.exports = function(grunt) {
         karma: {
             options: {
                 hostname: os.hostname(),
-                configFile: './configs/karma.conf.js',
+                configFile: './karma.conf.js',
+            },
+            unit: {
+                singleRun: true,
+                browsers: grunt.option('browsers') ? grunt.option('browsers').split(',') : (['PhantomJS' || 'Firefox' || 'Chrome'])
+            },
+            unitBackground: {
+                background: true,
+                browsers: grunt.option('browsers') ? grunt.option('browsers').split(',') : (['PhantomJS' || 'Firefox' || 'Chrome'])
             },
             e2eSocketStream: {
                 singleRun: true,
@@ -148,7 +161,7 @@ module.exports = function(grunt) {
                         '/': 'http://localhost:3000/'
                     }
                 },
-                browsers: [ [process.env.TRAVIS ? 'PhantomJS' : grunt.option('browsers') || 'Chrome']]
+                browsers: process.env.TRAVIS ? 'PhantomJS' : grunt.option('browsers') ? grunt.option('browsers').split(',') : ['Chrome']
             },
             e2eSocketStreamBackground: {
                 background: true,
@@ -162,7 +175,7 @@ module.exports = function(grunt) {
                         '/': 'http://localhost:3000/'
                     }
                 },
-                browsers: [ [process.env.TRAVIS ? 'PhantomJS' : grunt.option('browsers') || 'Chrome']]
+                browsers: process.env.TRAVIS ? 'PhantomJS' : grunt.option('browsers') ? grunt.option('browsers').split(',') : ['Chrome']
             },
             e2eSocketIO: {
                 singleRun: true,
@@ -176,7 +189,7 @@ module.exports = function(grunt) {
                         '/': 'http://localhost:3001/'
                     }
                 },
-                browsers: [ [process.env.TRAVIS ? 'PhantomJS' : grunt.option('browsers') || 'Chrome']]
+                browsers: process.env.TRAVIS ? 'PhantomJS' : grunt.option('browsers') ? grunt.option('browsers').split(',') : ['Chrome']
             },
             e2eSocketIOBackground: {
                 background: true,
@@ -190,7 +203,7 @@ module.exports = function(grunt) {
                         '/': 'http://localhost:3001/'
                     }
                 },
-                browsers: [ [process.env.TRAVIS ? 'PhantomJS' : grunt.option('browsers') || 'Chrome']]
+                browsers: process.env.TRAVIS ? 'PhantomJS' : grunt.option('browsers') ? grunt.option('browsers').split(',') : ['Chrome']
             }
         },
         symlink: {
@@ -246,11 +259,13 @@ module.exports = function(grunt) {
     grunt.registerTask('dev:update:libs',                                        ['bower', 'clean:links', 'symlink:libs']);
 
     /* Test tasks */
-    grunt.registerTask('test', 'Runs all the test once',                         ['test:socketstream', 'test:socket.io']);
+    grunt.registerTask('test', 'Runs all the test once',                         ['test:unit', 'test:socketstream', 'test:socket.io']);
+    grunt.registerTask('test:unit', 'Runs unit tests once',                      ['karma:unit']);
     grunt.registerTask('test:socketstream', 'Single run end-to-end tests for SocketStream App', ['start:socketstream', 'karma:e2eSocketStream']);
     grunt.registerTask('test:socket.io', 'Single run end-to-end tests for Socket.io App', ['start:socket.io', 'karma:e2eSocketIO']);
 
     /* Watch tasks */
+    grunt.registerTask('watch:test:unit', 'Run and watch for unit',               ['karma:unitBackground', 'monitor:unit']);
     grunt.registerTask('watch:test:socketstream', 'Run end-to-end tests and watching changes for SocketStream App', ['start:socketstream', 'karma:e2eSocketStreamBackground', 'delay', 'monitor:e2eSocketStream']);
     grunt.registerTask('watch:test:socket.io', 'Run end-to-end tests and watching changes for Socket.io App', ['start:socket.io', 'karma:e2eSocketIOBackground', 'delay', 'monitor:e2eSocketIO']);
 
@@ -356,11 +371,11 @@ module.exports = function(grunt) {
                         copyStack.push( [path.join(_path, _main), path.join(grunt.config.get('dirs.angular-route'), _main)] );
                     break;
 
-                    // case 'angular-mocks':
-                    //     /* bower_components/angular-mocks/angular-mocks.js */
-                    //     // console.log(_module, path.join(_path, _main));
-                    //     copyStack.push( [path.join(_path, _main), path.join(grunt.config.get('dirs.angular-mocks'), _main)] );
-                    // break;
+                    case 'angular-mocks':
+                        /* bower_components/angular-mocks/angular-mocks.js */
+                        // console.log(_module, path.join(_path, _main));
+                        copyStack.push( [path.join(_path, _main), path.join(grunt.config.get('dirs.angular-mocks'), _main)] );
+                    break;
                 }
             }
         }

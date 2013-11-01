@@ -4,28 +4,59 @@
     "use strict";
     var $resourceMinErr = angular.$$minErr('ngResourceIO');
 
-
     angular.module('ngResourceIO', [])
 
         .provider('resourceIOconfig', function() {
             var config = {
-                SOCKET_INSTANCE: null,
-                SOCKET_EVENT_METHOD: null,
-                SOCKET_RPC_METHOD: null,
-                SOCKET_RPC_PREFFIX: 'pubsub:',
-                SOCKET_MESSAGE_PARSE: false,
+                "socketstream": {
+                    SOCKET_INSTANCE                : 'ss',     //   window.ss
+                    SOCKET_EVENT_METHOD            : 'event',  //   window.ss.event.on()
+                    SOCKET_SEND_METHOD             : 'rpc',    //   window.ss.rpc()
+                    SOCKET_INCOMING_MESSAGE_PREFFIX: 'pubsub', //   window.ss.event.on()
+                    SOCKET_MODEL_METHOD_DELIMITER  : '.',      //   window.ss.rpc('model.find', data)
+                    SOCKET_MESSAGE_PARSE           : false     //   JSON.parse() all the incomming messages
+                },
+                "sockt.io": {
+                    SOCKET_INSTANCE                : 'socket',  //  window.socket
+                    SOCKET_EVENT_METHOD            : null,      //  window.socket.on()
+                    SOCKET_SEND_METHOD             : 'emit',    //  window.socket.emit()
+                    SOCKET_INCOMING_MESSAGE_PREFFIX: 'pubsub',  //  window.socket.on()
+                    SOCKET_MODEL_METHOD_DELIMITER  : ':',       //  window.socket.emit('model.find', data)
+                    SOCKET_MESSAGE_PARSE           : false      //  JSON.parse() all the incomming messages
+                }
+            },
+            _default = 'socket.io';
+
+            this.setConfig = function(name, newConfig) {
+                if (!name || name === '' || typeof name !== 'string' || typeof newConfig !== 'object') {
+                    return false;
+                }
+                if (config[name]) {
+                    angular.extend({}, newConfig, config[name]);
+                } else {
+                    config[name] = newConfig;
+                }
             }
 
-            this.setConfig = function(newConfig) {
-                angular.copy(newConfig, config);
+            this.getConfig = function(name) {
+                return name ? config[name] : config;
             }
 
-            this.getConfig = function() {
-                return config;
+            this.setDefaultConfigName = function(name) {
+                if (config[name]) {
+                    _default = name;
+                    return true;
+                } else {
+                    return false;
+                }
             }
 
-            this.$get = function() {
-                return config;
+            this.getDefaultConfigName = function() {
+                return _default;
+            }
+
+            this.$get = function(name) {
+                return name ? config[name] : config[_default];
             }
         })
         .provider('pubsub', function() {
@@ -49,7 +80,7 @@
                     Object.getPrototypeOf($rootScope).$on = function(name) {
                         console.log('name>>>>>', name);
                         var scope = this;
-                        // if (name.length && name.substr(0, config.SOCKET_RPC_PREFFIX.length) === config.SOCKET_RPC_PREFFIX) {
+                        // if (name.length && name.substr(0, config.SOCKET_INCOMING_MESSAGE_PREFFIX.length) === config.SOCKET_INCOMING_MESSAGE_PREFFIX) {
                             /* in our case CALLER is ss.event */
                             // console.log('CALLER', CALLER);
                             CALLER.on(name, function(data) {
@@ -69,7 +100,7 @@
             [       '$rootScope', '$q', 'resourceIOconfig',
             function($rootScope,   $q,   resourceIOconfig) {
                 var config = resourceIOconfig,
-                    CALLER = config.SOCKET_RPC_METHOD ? window[config.SOCKET_INSTANCE][config.SOCKET_RPC_METHOD] : window[config.SOCKET_EVENT_METHOD];
+                    CALLER = config.SOCKET_SEND_METHOD ? window[config.SOCKET_INSTANCE][config.SOCKET_SEND_METHOD] : window[config.SOCKET_EVENT_METHOD];
 
                 return function(command) {
                     var args     = Array.prototype.slice.apply(arguments),
@@ -128,8 +159,8 @@
                 copy           = angular.copy;
 
 
-                function ResourceFactory(rpcModuleName, paramDefaults, actions, events) {
-                    var onName   = [config.SOCKET_RPC_PREFFIX, rpcModuleName ].join(':'),
+                function ResourceFactory(modelName, configName, actions, events) {
+                    var onName   = [config.SOCKET_INCOMING_MESSAGE_PREFFIX, modelName ].join(':'),
                         listners = [];
 
                     actions = extend({}, DEFAULT_ACTIONS, actions);
@@ -371,7 +402,7 @@
                             responseInterceptor      = action.interceptor && action.interceptor.response || defaultResponseInterceptor;
                             responseErrorInterceptor = action.interceptor && action.interceptor.responseError || undefined;
 
-                            promise = rpc( rpcModuleName + '.' + name, params ).then(function(response) {
+                            promise = rpc( modelName + '.' + name, params ).then(function(response) {
                                 var data    = response.data,
                                     promise = value.$promise;
 

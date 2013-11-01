@@ -8,7 +8,7 @@ module.exports = function(config) {
     config.set({
 
         /* base path, that will be used to resolve files and exclude */
-        basePath: '../',
+        basePath: './',
 
         /* List of frameworks you want to use. Typically, you will set this to ['jasmine'], ['mocha'] or ['qunit'] */
         frameworks: ['jasmine'],
@@ -16,22 +16,19 @@ module.exports = function(config) {
         /* list of files / patterns to load in the browser */
         files: [
             /* need to load libs including current versions of jquery and angular*/
-            'client/code/libs/**/*.js',
-
-            /* need to load angular and project moks */
-            'test/libs/mocks/*.js',
-            'test/libs/angular/*.js',
+            'test/libs/jquery.js',
+            'test/libs/angular.js',
+            'test/libs/angular-mocks.js',
 
             /* load cource code itself */
-            'client/code/app/**/*.js',
+            'src/**/*.js',
 
-            /* load clietn unit tests */
-            'test/unit/client/**/*.spec.js'
+            /* load client unit tests */
+            'test/unit/**/*.spec.js'
         ],
 
         /* list of files to exclude */
         exclude: [
-            'client/code/app/entry.js'
         ],
 
 
