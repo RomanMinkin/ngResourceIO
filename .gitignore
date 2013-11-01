@@ -8,6 +8,8 @@ lib-cov
 *.pid
 *.gz
 
+test-results.xml
+
 pids
 logs
 results

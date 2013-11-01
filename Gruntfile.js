@@ -121,7 +121,8 @@ module.exports = function(grunt) {
         monitor: {
             options: {
                 atBegin  : true,
-                interrupt: true
+                interrupt: true,
+                debounceDelay: 1000,
             },
             unit: {
                 files: ['src/**/*.js', 'test/unit/**/*.js'],
@@ -265,7 +266,7 @@ module.exports = function(grunt) {
     grunt.registerTask('test:socket.io', 'Single run end-to-end tests for Socket.io App', ['start:socket.io', 'karma:e2eSocketIO']);
 
     /* Watch tasks */
-    grunt.registerTask('watch:test:unit', 'Run and watch for unit',               ['karma:unitBackground', 'monitor:unit']);
+    grunt.registerTask('watch:test:unit', 'Run and watch for unit',               ['karma:unitBackground', 'delay', 'monitor:unit']);
     grunt.registerTask('watch:test:socketstream', 'Run end-to-end tests and watching changes for SocketStream App', ['start:socketstream', 'karma:e2eSocketStreamBackground', 'delay', 'monitor:e2eSocketStream']);
     grunt.registerTask('watch:test:socket.io', 'Run end-to-end tests and watching changes for Socket.io App', ['start:socket.io', 'karma:e2eSocketIOBackground', 'delay', 'monitor:e2eSocketIO']);
 

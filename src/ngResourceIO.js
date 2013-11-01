@@ -25,16 +25,18 @@
                     SOCKET_MESSAGE_PARSE           : false      //  JSON.parse() all the incomming messages
                 }
             },
-            _default = 'socket.io';
+            defaultConfigName = 'socket.io';
 
             this.setConfig = function(name, newConfig) {
                 if (!name || name === '' || typeof name !== 'string' || typeof newConfig !== 'object') {
                     return false;
-                }
-                if (config[name]) {
-                    angular.extend({}, newConfig, config[name]);
                 } else {
-                    config[name] = newConfig;
+                    if (config[name]) {
+                        angular.extend({}, newConfig, config[name]);
+                    } else {
+                        config[name] = newConfig;
+                    }
+                    return true;
                 }
             }
 
@@ -44,7 +46,7 @@
 
             this.setDefaultConfigName = function(name) {
                 if (config[name]) {
-                    _default = name;
+                    defaultConfigName = name;
                     return true;
                 } else {
                     return false;
@@ -52,11 +54,11 @@
             }
 
             this.getDefaultConfigName = function() {
-                return _default;
+                return defaultConfigName;
             }
 
             this.$get = function(name) {
-                return name ? config[name] : config[_default];
+                return name ? config[name] : config[defaultConfigName];
             }
         })
         .provider('pubsub', function() {

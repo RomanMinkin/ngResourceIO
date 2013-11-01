@@ -38,7 +38,7 @@ module.exports = function(config) {
          *  CLI --reporters progress
          *  reporters: ['progress', 'junit'],
          */
-        reporters: ['progress', ],
+        reporters: ['progress'],
 
         /*  The port where the webserver will be listening.
          * CLI --port 9876
@@ -100,8 +100,8 @@ module.exports = function(config) {
             'karma-jasmine',
             'karma-chrome-launcher',
             'karma-firefox-launcher',
-            'karma-phantomjs-launcher'
-            // 'karma-junit-reporter',
+            'karma-phantomjs-launcher',
+            'karma-junit-reporter'
             // 'karma-commonjs'
         ]
     });
