@@ -1,9 +1,32 @@
 {
-  "name": "ngresourceio",
-  "version": "0.0.1",
+  "name": "angular-resource-io",
+  "version": "0.0.0",
+  "author": "Roman Minkin <minkinroman@gmail.com>",
+  "main": "release/angular-resource-io.js",
+  "homepage": "https://github.com/RomanMinkin/ngResourceIO",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/RomanMinkin/ngResourceIO.git"
+  },
+  "ignore": [
+    ".DS_Store",
+    ".git",
+    ".gitignore",
+    ".jshintignore",
+    ".jshintrc",
+    "Gruntfile.js",
+    "karma-e2e.conf.js",
+    "karma.conf.js",
+    "node_modules",
+    "package.json",
+    "src",
+    "test",
+  ],
   "dependencies": {
-    "jquery": "1.9.1",
     "angular": "1.2.0-rc.3",
+  },
+  "devDependencies": {
+    "jquery": "1.9.1",
     "angular-route": "1.2.0-rc.3",
     "angular-mocks": "1.2.0-rc.3"
   }
