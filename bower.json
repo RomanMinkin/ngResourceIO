@@ -20,10 +20,10 @@
     "node_modules",
     "package.json",
     "src",
-    "test",
+    "test"
   ],
   "dependencies": {
-    "angular": "1.2.0-rc.3",
+    "angular": "1.2.0-rc.3"
   },
   "devDependencies": {
     "jquery": "1.9.1",
