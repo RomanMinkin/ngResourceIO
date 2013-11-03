@@ -1,58 +1,54 @@
 "use strict";
 
-describe('resourceIOconfigProvider', function() {
-    var _resourceIOconfigProvider;
+describe('socketProvider', function() {
+    var socketProvider,
+        defaults = {
+        "socketstream": {
+            SOCKET_INSTANCE                : 'ss',
+            SOCKET_EVENT_METHOD            : 'event',
+            SOCKET_SEND_METHOD             : 'rpc',
+            SOCKET_INCOMING_MESSAGE_PREFFIX: 'pubsub',
+            SOCKET_MODEL_METHOD_DELIMITER  : '.',
+            SOCKET_MESSAGE_PARSE           : false
+        },
+        "socket.io": {
+            SOCKET_INSTANCE                : 'socket',
+            SOCKET_EVENT_METHOD            : null,
+            SOCKET_SEND_METHOD             : 'emit',
+            SOCKET_INCOMING_MESSAGE_PREFFIX: 'pubsub',
+            SOCKET_MODEL_METHOD_DELIMITER  : ':',
+            SOCKET_MESSAGE_PARSE           : false
+        }
+    };
 
-    beforeEach(module('ngResourceIO', function(resourceIOconfigProvider) {
-        _resourceIOconfigProvider = resourceIOconfigProvider;
+    beforeEach(module('ngResourceIO', function(_socketProvider_) {
+        socketProvider = _socketProvider_;
     }));
 
-    describe('.getConfig()', function() {
-        it('should return default config objects', inject(function() {
-            var config = {
-                "socketstream": {
-                    SOCKET_INSTANCE                : 'ss',
-                    SOCKET_EVENT_METHOD            : 'event',
-                    SOCKET_SEND_METHOD             : 'rpc',
-                    SOCKET_INCOMING_MESSAGE_PREFFIX: 'pubsub',
-                    SOCKET_MODEL_METHOD_DELIMITER  : '.',
-                    SOCKET_MESSAGE_PARSE           : false
-                },
-                "sockt.io": {
-                    SOCKET_INSTANCE                : 'socket',
-                    SOCKET_EVENT_METHOD            : null,
-                    SOCKET_SEND_METHOD             : 'emit',
-                    SOCKET_INCOMING_MESSAGE_PREFFIX: 'pubsub',
-                    SOCKET_MODEL_METHOD_DELIMITER  : ':',
-                    SOCKET_MESSAGE_PARSE           : false
-                }
-            };
+    describe('.getDefaults()', function() {
 
-            expect( _resourceIOconfigProvider.getConfig() ).toEqual(config);
+        it('should return default config objects', inject(function() {
+            expect( socketProvider.getDefaults()).toEqual(defaults);
+        }));
+
+        it('should return default config object by name', inject(function() {
+            expect( socketProvider.getDefaults('socketstream') ).toEqual(defaults['socketstream']);
+            expect( socketProvider.getDefaults('socket.io') ).toEqual(defaults['socket.io']);
+        }));
+    });
+
+    describe('.getConfig()', function() {
+        it('should return an empty object {} if config has not been setted up', inject(function() {
+            expect( socketProvider.getConfig() ).toEqual({});
         }));
 
         it('should return config object by name', inject(function() {
-            var config = {
-                "socketstream": {
-                    SOCKET_INSTANCE                : 'ss',
-                    SOCKET_EVENT_METHOD            : 'event',
-                    SOCKET_SEND_METHOD             : 'rpc',
-                    SOCKET_INCOMING_MESSAGE_PREFFIX: 'pubsub',
-                    SOCKET_MODEL_METHOD_DELIMITER  : '.',
-                    SOCKET_MESSAGE_PARSE           : false
-                },
-                "sockt.io": {
-                    SOCKET_INSTANCE                : 'socket',
-                    SOCKET_EVENT_METHOD            : null,
-                    SOCKET_SEND_METHOD             : 'emit',
-                    SOCKET_INCOMING_MESSAGE_PREFFIX: 'pubsub',
-                    SOCKET_MODEL_METHOD_DELIMITER  : ':',
-                    SOCKET_MESSAGE_PARSE           : false
-                }
-            }
+            expect( socketProvider.setConfig('socketstream', defaults['socketstream']) ).toEqual(true);
+            expect( socketProvider.getConfig('socketstream') ).toEqual(defaults['socketstream']);
 
-            expect( _resourceIOconfigProvider.getConfig('socketstream') ).toEqual(config['socketstream']);
-            expect( _resourceIOconfigProvider.getConfig('sockt.io') ).toEqual(config['sockt.io']);
+
+            expect( socketProvider.setConfig('socket.io', defaults['socket.io']) ).toEqual(true);
+            expect( socketProvider.getConfig('socket.io') ).toEqual(defaults['socket.io']);
         }));
 
     });
@@ -70,8 +66,8 @@ describe('resourceIOconfigProvider', function() {
                     SOCKET_MESSAGE_PARSE           : false
             }
 
-            expect( _resourceIOconfigProvider.setConfig(name, config)  ).toEqual(true);
-            expect( _resourceIOconfigProvider.getConfig(name) ).toEqual(config);
+            expect( socketProvider.setConfig(name, config)  ).toEqual(true);
+            expect( socketProvider.getConfig(name) ).toEqual(config);
         }));
 
         it('should overwrite existing config', inject(function() {
@@ -84,36 +80,65 @@ describe('resourceIOconfigProvider', function() {
                     SOCKET_MODEL_METHOD_DELIMITER  : ':',
                     SOCKET_MESSAGE_PARSE           : false
             }
-            expect( _resourceIOconfigProvider.setConfig(name, config)  ).toEqual(true);
-            expect( _resourceIOconfigProvider.getConfig(name) ).toEqual(config);
+            expect( socketProvider.setConfig(name, config)  ).toEqual(true);
+            expect( socketProvider.getConfig(name) ).toEqual(config);
         }));
 
         it('should return false if name has not been specified', inject(function() {
-            expect( _resourceIOconfigProvider.setConfig() ).toEqual(false);
-            expect( _resourceIOconfigProvider.setConfig('') ).toEqual(false);
+            expect( socketProvider.setConfig() ).toEqual(false);
+            expect( socketProvider.setConfig('') ).toEqual(false);
         }));
 
         it('should return false if new config object has not been specified', inject(function() {
-            expect( _resourceIOconfigProvider.setConfig('test') ).toEqual(false);
-            expect( _resourceIOconfigProvider.setConfig('test', false) ).toEqual(false);
+            expect( socketProvider.setConfig('test') ).toEqual(false);
+            expect( socketProvider.setConfig('test', false) ).toEqual(false);
         }));
     });
 
     describe('.getDefaultConfigName()', function() {
         it('should return default config object', inject(function() {
-            expect( _resourceIOconfigProvider.getDefaultConfigName() ).toEqual('socket.io');
+            expect( socketProvider.getDefaultConfigName() ).toEqual('socket.io');
         }));
     });
 
-    describe('.setDefaultConfigName()', function() {
+    describe('.use()', function() {
         it('should set default config object', inject(function() {
-            expect( _resourceIOconfigProvider.setDefaultConfigName('socketstream') ).toEqual(true);
-            expect( _resourceIOconfigProvider.getDefaultConfigName() ).toEqual('socketstream');
+            var config = {
+                socketstream: defaults['socketstream']
+            }
+
+            expect( socketProvider.use('socketstream', true) ).toEqual(true);
+            expect( socketProvider.getDefaultConfigName() ).toEqual('socketstream');
+            expect( socketProvider.getConfig() ).toEqual(config);
+        }));
+
+        it('should not set default config object if second argumant been messed', inject(function() {
+            var config = {
+                socketstream: defaults['socketstream']
+            }
+
+            expect( socketProvider.use('socketstream') ).toEqual(true);
+            expect( socketProvider.getDefaultConfigName() ).toEqual('socket.io');
+            expect( socketProvider.getConfig() ).toEqual(config);
+        }));
+
+        it('should set `socketstream` as default config if second argumant been passed', inject(function() {
+            expect( socketProvider.use('socket.io') ).toEqual(true);
+            expect( socketProvider.use('socketstream', true) ).toEqual(true);
+            expect( socketProvider.getDefaultConfigName() ).toEqual('socketstream');
+            expect( socketProvider.getConfig() ).toEqual(defaults);
+        }));
+
+        it('should keep socket.io as default config if second argumant been messed', inject(function() {
+            expect( socketProvider.use('socket.io') ).toEqual(true);
+            expect( socketProvider.use('socketstream') ).toEqual(true);
+            expect( socketProvider.getDefaultConfigName() ).toEqual('socket.io');
+            expect( socketProvider.getConfig() ).toEqual(defaults);
         }));
 
         it('should not set default config object if config name does not exists', inject(function() {
-            expect( _resourceIOconfigProvider.setDefaultConfigName('do not exist')).toEqual(false);
-            expect( _resourceIOconfigProvider.getDefaultConfigName() ).toEqual('socket.io');
+            expect( socketProvider.use('do not exist')).toEqual(false);
+            expect( socketProvider.getDefaultConfigName() ).toEqual('socket.io');
         }));
     });
 })

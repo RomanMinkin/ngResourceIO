@@ -8,15 +8,10 @@
         'ngResourceIO'
     ]);
 
-    app.config(['$routeProvider', '$locationProvider', 'resourceIOconfigProvider',
-        function($routeProvider,   $locationProvider,   resourceIOconfigProvider) {
+    app.config(['$routeProvider', '$locationProvider', 'socketProvider',
+        function($routeProvider,   $locationProvider,   socketProvider) {
 
-        resourceIOconfigProvider.setConfig({
-            SOCKET_INSTANCE : 'socket',
-            SOCKET_EVENT_METHOD : 'emit',
-            // SOCKET_RPC_METHOD : 'rpc',
-            SOCKET_RPC_PREFFIX : 'pubsub'
-        });
+        socketProvider.use('socket.io');
 
         $locationProvider.html5Mode(true);
 
@@ -37,9 +32,8 @@
     app.controller('testController',
         [        'resourceIO',
         function(ResourceIO) {
-            // var resource = new ResourceIO('1');
+            var resource = new ResourceIO('1');
 
-            // resource.find();
-
+            resource = null;
     }]);
 })();

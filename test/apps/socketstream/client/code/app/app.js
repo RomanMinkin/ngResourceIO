@@ -1,6 +1,6 @@
 /*global angular, window*/
 
-(function(window){
+(function(){
     "use strict";
 
     var app = window.app = angular.module('app', [
@@ -8,15 +8,10 @@
         'ngResourceIO'
     ]);
 
-    app.config(['$routeProvider', '$locationProvider', 'resourceIOconfigProvider',
-        function($routeProvider,   $locationProvider,   resourceIOconfigProvider) {
+    app.config(['$routeProvider', '$locationProvider', 'socketProvider',
+        function($routeProvider,   $locationProvider,   socketProvider) {
 
-        resourceIOconfigProvider.setConfig({
-            SOCKET_INSTANCE : 'ss',
-            SOCKET_EVENT_METHOD : 'event',
-            SOCKET_RPC_METHOD : 'rpc',
-            SOCKET_RPC_PREFFIX : 'pubsub'
-        });
+        socketProvider.use('socketstream', true);
 
         $locationProvider.html5Mode(true);
 
@@ -41,4 +36,4 @@
 
             resource = null;
     }]);
-})(window);
+})();
