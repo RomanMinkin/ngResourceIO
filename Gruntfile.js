@@ -41,7 +41,7 @@ module.exports = function(grunt) {
             'app_socketio'         : '<%= dirs.test %>/apps/socket.io',
             'app_socketio_libs'    : '<%= dirs.app_socketio %>/static'
         },
-        pkg: grunt.file.readJSON('package.json'),
+        pkg: grunt.file.readJSON('bower.json'),
         buildtag: '-dev-' + grunt.template.today('yyyy-mm-dd'),
         meta: {
             banner: [
