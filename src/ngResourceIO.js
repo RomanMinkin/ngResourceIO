@@ -182,7 +182,6 @@
 
                 EVENT_CALLER = config.SOCKET_EVENT_METHOD ? window[config.SOCKET_INSTANCE][config.SOCKET_EVENT_METHOD] : window[config.SOCKET_EVENT_METHOD];
 
-
                 function ResourceFactory(modelName, configName, actions, events) {
                     var onName   = [config.SOCKET_INCOMING_MESSAGE_PREFFIX, modelName ].join(':'),
                         listners = [];
@@ -233,11 +232,11 @@
                         }
 
                         reatachListners();
-                        self.listners = listners;
+                        self.$_listners = listners;
 
                         reatachOff = $rootScope.$on(onName.concat(':reatach'), function() {
                             reatachListners();
-                            self.listners = listners;
+                            self.$_listners = listners;
                         });
 
                     }
@@ -317,7 +316,7 @@
                             _events = events;
 
                         if (complite) {
-                            _events.concat({reatach: true});
+                            _events.reatach = true;
                         }
 
                         forEach(_events, function(_event, _name) {
@@ -357,7 +356,7 @@
 
                     Resource.prototype['$on']  = Resource.$on;
                     Resource.prototype['$off'] = function(name) {
-                        forEach(this.listners, function(listner) {
+                        forEach(this.$_listners, function(listner) {
                             if (name) {
                                 if (listner.name === name) {
                                     listner.off();
