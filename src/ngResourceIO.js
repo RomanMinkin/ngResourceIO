@@ -112,13 +112,13 @@
 
                             if (_name === defaultConfigName) {
                                 _defaultSend = function(command) {
-                                    send(command, config[_name]);
+                                    return send(command, config[_name]);
                                 }
                             }
 
                             _sockets[_name] = {
                                 send: function(command) {
-                                    send(command, config[_name]);
+                                    return send(command, config[_name]);
                                 }
                             }
                         }
