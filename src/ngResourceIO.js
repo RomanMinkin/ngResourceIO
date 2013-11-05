@@ -1,6 +1,6 @@
 /*global window, angular, console*/
 
-(function( angular ){
+(function( angular ) {
     "use strict";
     var $resourceMinErr = angular.$$minErr('ngResourceIO');
 
@@ -88,7 +88,7 @@
                             error,
                             result;
 
-                        CALLER.apply(config.SOCKET_INSTANCE, [command].concat(args.slice(1, args.length)).concat(function() {
+                        CALLER.apply(config.SOCKET_INSTANCE, [command].concat(args.slice(2, args.length)).concat(function() {
                             error  = Array.prototype.slice.apply(arguments)[0];
                             result = Array.prototype.slice.apply(arguments)[1];
 
@@ -110,16 +110,15 @@
                         /*jshint loopfunc:true */
                         if (config.hasOwnProperty(_name)) {
 
-                            if (_name === defaultConfigName) {
-                                _defaultSend = function(command) {
-                                    return send(command, config[_name]);
+                            _sockets[_name] = {
+                                send: function(command) {
+                                    var args     = Array.prototype.slice.apply(arguments);
+                                    return send.apply(send, [command, config[_name]].concat(args.slice(1, args.length)));
                                 }
                             }
 
-                            _sockets[_name] = {
-                                send: function(command) {
-                                    return send(command, config[_name]);
-                                }
+                            if (_name === defaultConfigName) {
+                                _defaultSend = _sockets[_name].send;
                             }
                         }
                     }
