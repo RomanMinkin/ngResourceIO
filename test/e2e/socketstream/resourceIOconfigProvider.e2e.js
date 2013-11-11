@@ -7,7 +7,6 @@ describe('resourceIOconfigProvider', function() {
 
     describe('.setConfig()', function() {
         it('should load SocketStream config', function(){
-
         });
     });
 });

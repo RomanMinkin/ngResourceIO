@@ -23,7 +23,8 @@ module.exports = function(config) {
 
         /* list of files / patterns to load in the browser */
         files: [
-            'test/e2e/**/*.e2e.js'
+            'test/libs/angular-mocks.js',
+            'test/e2e/**/*.e2e.js',
         ],
 
         /* list of files to exclude */

@@ -7,7 +7,14 @@ var http = require('http'),
 ss.client.define('main', {
   view: 'app.jade',
   css:  [''],
-  code: ['libs/jquery.js', 'libs/angular.js', 'libs/angular-route.js', 'libs/ngResourceIO.js', 'app'],
+  code: [
+    'libs/jquery.js',
+    'libs/angular.js',
+    'libs/angular-route.js',
+    // 'libs/angular-mocks.js',
+    'libs/ngResourceIO.js',
+    'app'
+  ],
   tmpl: '*'
 });
 
