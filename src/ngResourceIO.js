@@ -33,6 +33,7 @@
                     return false;
                 } else {
                     if (config[name]) {
+                        // config[name] = newConfig;
                         angular.extend({}, newConfig, config[name]);
                     } else {
                         config[name] = newConfig;
@@ -81,29 +82,57 @@
                         return name ? config[name] : config[defaultConfigName];
                     }
 
-                    function send(command, config) {
-                        var CALLER   = config.SOCKET_SEND_METHOD ? window[config.SOCKET_INSTANCE][config.SOCKET_SEND_METHOD] : window[config.SOCKET_EVENT_METHOD],
-                            args     = Array.prototype.slice.apply(arguments),
-                            deferred = $q.defer(),
-                            error,
-                            result;
 
-                        CALLER.apply(config.SOCKET_INSTANCE, [command].concat(args.slice(2, args.length)).concat(function() {
-                            error  = Array.prototype.slice.apply(arguments)[0];
-                            result = Array.prototype.slice.apply(arguments)[1];
+                    function send(command, config) {
+                        var CALLER   = window[config.SOCKET_INSTANCE][config.SOCKET_SEND_METHOD],
+                            args     = Array.prototype.slice.apply(arguments),
+                            deferred = $q.defer();
+
+
+                        function RPCcallback() {
+                            var error  = Array.prototype.slice.apply(arguments)[0],
+                                result = Array.prototype.slice.apply(arguments)[1];
 
                             $rootScope.$apply(function() {
-                                // deferred.notify('Working...');
-
-                                /* Error habdeling */
                                 if (error) {
                                     deferred.reject(error);
                                 } else {
                                     deferred.resolve(result);
                                 }
+
+                                window[config.SOCKET_INSTANCE].removeListener(command, RPCcallback);
+
                             });
-                        }));
-                        return deferred.promise;
+                        }
+
+
+                        if (config.SOCKET_INSTANCE === 'socket') {
+                            CALLER.apply(window[config.SOCKET_INSTANCE], [command].concat(args.slice(2, args.length)));
+
+                            window[config.SOCKET_INSTANCE].on(command, RPCcallback );
+
+                            return deferred.promise;
+
+                        } else if (config.SOCKET_INSTANCE === 'ss') {
+                            CALLER.apply(window[config.SOCKET_INSTANCE], [command].concat(args.slice(2, args.length)).concat(function() {
+                                var error  = Array.prototype.slice.apply(arguments)[0],
+                                    result = Array.prototype.slice.apply(arguments)[1];
+
+                                // console.log('arguments', arguments);
+
+                                $rootScope.$apply(function() {
+                                    // deferred.notify('Working...');
+
+                                    /* Error habdeling */
+                                    if (error) {
+                                        deferred.reject(error);
+                                    } else {
+                                        deferred.resolve(result);
+                                    }
+                                });
+                            }));
+                            return deferred.promise;
+                        }
                     }
 
                     for (_name in config) {

@@ -266,7 +266,8 @@ module.exports = function(grunt) {
     grunt.registerTask('test:socket.io', 'Single run end-to-end tests for Socket.io App', ['start:socket.io', 'karma:e2eSocketIO']);
 
     /* Watch tasks */
-    grunt.registerTask('watch:test:unit', 'Run and watch for unit',               ['karma:unitBackground', 'delay', 'monitor:unit']);
+    grunt.registerTask('watch:test:unit', 'Run and watch for unit',               ['karma:unitBackground', 'start:socket.io', 'delay', 'monitor:unit']);
+    // grunt.registerTask('watch:test:unit', 'Run and watch for unit',               ['karma:unitBackground', 'delay', 'monitor:unit']);
     grunt.registerTask('watch:test:socketstream', 'Run end-to-end tests and watching changes for SocketStream App', ['start:socketstream', 'karma:e2eSocketStreamBackground', 'delay', 'monitor:e2eSocketStream']);
     grunt.registerTask('watch:test:socket.io', 'Run end-to-end tests and watching changes for Socket.io App', ['start:socket.io', 'karma:e2eSocketIOBackground', 'delay', 'monitor:e2eSocketIO']);
 
@@ -282,6 +283,28 @@ module.exports = function(grunt) {
 
 
     /* Helper tasks */
+    grunt.registerTask('build-socket.io-client', 'Run SocketStream test server for the test porpuse', function() {
+        var done     = this.async(),
+            target   = 'node_modules/socket.io/node_modules/socket.io-client',
+            file     = 'socket.io.js',
+            build    = util.format('node %s/bin/builder.js', target),
+            copyFrom = path.join(target, 'dist', file),
+            copyTo   = path.join(grunt.config.get('dirs.test_libs'), file);
+
+        shjs.exec(build);
+
+        fs.copy(copyFrom, copyTo, function(err) {
+            grunt.log.write('Coping "' + copyTo + '"...');
+            if (err) {
+                done(err);
+
+            } else {
+                grunt.log.writeln("Ok".green);
+                done();
+            }
+        });
+    });
+
     grunt.registerTask('start:socketstream', 'Run SocketStream test server for the test porpuse', function() {
         var done         = this.async(),
             app_path     = grunt.config.get('dirs.app_socketstream'),

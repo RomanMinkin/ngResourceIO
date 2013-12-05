@@ -30,10 +30,27 @@
     }])
 
     app.controller('testController',
-        [        'resourceIO',
-        function(ResourceIO) {
-            var resource = new ResourceIO('1');
+        [       'socket', 'resourceIO',
+        function(socket,   ResourceIO) {
+            // var resource = new ResourceIO('1');
 
-            resource = null;
+            // resource = null;
+
+            setTimeout(function(){
+                socket.send('news.find', 1).then(function(result){
+                    console.log('result2 >> ', result);
+
+                }, function(reason){
+
+                    console.log('reason2 >> ', reason);
+                });
+            }, 1);
+            socket.send('news.find', 2).then(function(result){
+                console.log('result1 >> ', result);
+
+            }, function(reason){
+
+                console.log('reason1 >> ', reason);
+            });
     }]);
 })();

@@ -19,6 +19,7 @@ module.exports = function(config) {
             'test/libs/jquery.js',
             'test/libs/angular.js',
             'test/libs/angular-mocks.js',
+            // 'test/libs/socket.io.js',
 
             /* load cource code itself */
             'src/**/*.js',
