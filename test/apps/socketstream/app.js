@@ -19,7 +19,8 @@ ss.client.define('main', {
 });
 
 // Serve this client on the root URL
-ss.http.route('/', function(req, res){
+ss.http.route('/', function(req, res) {
+  console.log('request++');
   res.serveClient('main');
 });
 
@@ -34,7 +35,12 @@ ss.client.templateEngine.use('angular.js');
 // engineio setup to debuging
 ss.ws.transport.use('engineio', {
     server: function(io) {
-        io.set('log level', 5);
+        io.set('log level', 1);
+    },
+    client: {
+      host: "localhost",
+      port: 3000
+
     }
 });
 

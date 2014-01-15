@@ -1,5 +1,5 @@
 /*global window, console, ss, jQuery*/
-"use strict";
+'use strict';
 
 window.ss = require('socketstream');
 

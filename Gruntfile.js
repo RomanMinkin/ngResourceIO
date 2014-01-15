@@ -23,7 +23,9 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-nodeunit');
     grunt.loadNpmTasks('grunt-contrib-symlink');
+    grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-karma');
+    grunt.loadNpmTasks('grunt-contrib-jasmine');
 
     // Project configuration.
     grunt.initConfig({
@@ -92,7 +94,9 @@ module.exports = function(grunt) {
         },
         jshint: {
             server: {
-                options: grunt.util._.merge({}, grunt.file.readJSON('.jshintrc')),
+                options: grunt.util._.merge(grunt.file.readJSON('.jshintrc'),
+                    {}
+                ),
                 files: {
                     src: [
                         '*.js',
@@ -100,22 +104,40 @@ module.exports = function(grunt) {
                 }
             },
             client: {
-                options: grunt.util._.merge({
-                    browser     : true,
-                    node        : false,
-                    ignores: [
-                        '<%= dirs.test_libs %>/**',
-                        '<%= dirs.app_socketstream_libs %>/**',
-                        '<%= dirs.app_socketstream %>/node_modules/**',
-                        '<%= dirs.app_socketio_libs%>/**',
-                    ]
-                }, grunt.file.readJSON('.jshintrc')),
+                options: grunt.util._.merge(
+                    grunt.file.readJSON('.jshintrc'),
+                    {
+                        browser     : true,
+                        node        : false,
+                        ignores: [
+                            '<%= dirs.test_libs %>/**',
+                            '<%= dirs.app_socketstream_libs %>/**',
+                            '<%= dirs.app_socketstream %>/node_modules/**',
+                            '<%= dirs.app_socketio_libs%>/**',
+                        ]
+                    }
+                ),
                 files: {
                     src: [
                         'src/**/*.js',
                         'test/**/*.js'
                     ]
                 }
+            }
+        },
+        connect: {
+            server: {
+                options: {
+                    port: 9000,
+                    base: 'test/apps/static/'
+                }
+            }
+        },
+        jasmine: {
+            src: 'src/**/*.js',
+            options: {
+                specs: 'test/spec/**/*.js',
+                host : 'http://127.0.0.1:3000/'
             }
         },
         monitor: {
@@ -169,6 +191,7 @@ module.exports = function(grunt) {
                 options: {
                     configFile: './karma-e2e.conf.js',
                     files: [
+                        'node_modules/ng-midway-tester/src/ngMidwayTester.js',
                         'test/e2e/socketstream/**/*.e2e.js',
                         'test/e2e/common/**/*.e2e.js',
                     ],
@@ -183,6 +206,7 @@ module.exports = function(grunt) {
                 options: {
                     configFile: './karma-e2e.conf.js',
                     files: [
+                    'node_modules/ng-midway-tester/src/ngMidwayTester.js',
                         'test/e2e/socket.io/**/*.e2e.js',
                         'test/e2e/common/**/*.e2e.js',
                     ],
@@ -266,8 +290,7 @@ module.exports = function(grunt) {
     grunt.registerTask('test:socket.io', 'Single run end-to-end tests for Socket.io App', ['start:socket.io', 'karma:e2eSocketIO']);
 
     /* Watch tasks */
-    grunt.registerTask('watch:test:unit', 'Run and watch for unit',               ['karma:unitBackground', 'start:socket.io', 'delay', 'monitor:unit']);
-    // grunt.registerTask('watch:test:unit', 'Run and watch for unit',               ['karma:unitBackground', 'delay', 'monitor:unit']);
+    grunt.registerTask('watch:test:unit', 'Run and watch for unit',               ['karma:unitBackground', 'delay', 'monitor:unit']);
     grunt.registerTask('watch:test:socketstream', 'Run end-to-end tests and watching changes for SocketStream App', ['start:socketstream', 'karma:e2eSocketStreamBackground', 'delay', 'monitor:e2eSocketStream']);
     grunt.registerTask('watch:test:socket.io', 'Run end-to-end tests and watching changes for Socket.io App', ['start:socket.io', 'karma:e2eSocketIOBackground', 'delay', 'monitor:e2eSocketIO']);
 
@@ -362,13 +385,14 @@ module.exports = function(grunt) {
     grunt.registerTask('bower-copy', 'Execute Bower installer from node_modules/bower/bin', function() {
         var done           = this.async(),
             bower          = grunt.file.readJSON('bower.json'),
+            dependencies   = grunt.util._.merge(bower.dependencies, bower.devDependencies),
             copyStack      = [],
             _module,
             _bower,
             _path,
             _main;
 
-        for (_module in bower.dependencies) {
+        for (_module in dependencies) {
             if (bower.dependencies.hasOwnProperty(_module)) {
                 _path = path.join(grunt.config.get('dirs.bowerComponents'), _module);
                 _bower = grunt.file.readJSON( path.join(_path, '.bower.json') );

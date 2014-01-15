@@ -6,34 +6,37 @@
 
     angular.module('ngResourceIO', [])
 
-        .provider('socket', function() {
+        .provider('$socket', function() {
             var config   = {},
                 defaults = {
-                "socketstream": {
-                    SOCKET_INSTANCE                : 'ss',     //   window.ss
-                    SOCKET_EVENT_METHOD            : 'event',  //   window.ss.event.on()
-                    SOCKET_SEND_METHOD             : 'rpc',    //   window.ss.rpc()
-                    SOCKET_INCOMING_MESSAGE_PREFFIX: 'pubsub', //   window.ss.event.on()
-                    SOCKET_MODEL_METHOD_DELIMITER  : '.',      //   window.ss.rpc('model.find', data)
-                    SOCKET_MESSAGE_PARSE           : false     //   JSON.parse() all the incomming messages
+                    "socketstream": {
+                        SOCKET_TYPE                    : 'socketstream',    //   Library type
+                        SOCKET_INSTANCE                : 'ss',              //   window.ss
+                        SOCKET_EVENT_METHOD            : 'event',           //   window.ss.event.on()
+                        SOCKET_RPC_METHOD              : 'rpc',             //   window.ss.rpc()
+                        SOCKET_SEND_METHOD             : 'send',            //   window.ss.send()
+                        SOCKET_INCOMING_MESSAGE_PREFFIX: 'pubsub',          //   window.ss.event.on()
+                        SOCKET_MODEL_METHOD_DELIMITER  : '.',               //   window.ss.rpc('model.find', data)
+                        SOCKET_MESSAGE_PARSE           : false              //   JSON.parse() all the incomming messages
+                    },
+                    "socket.io": {
+                        SOCKET_TYPE                    : 'socket.io',       //  Library type
+                        SOCKET_INSTANCE                : 'socket',          //  window.socket
+                        SOCKET_EVENT_METHOD            : null,              //  window.socket.on()
+                        SOCKET_RPC_METHOD              : null,              //  window.socket.emit()
+                        SOCKET_SEND_METHOD             : 'send',            //  window.socket.send()
+                        SOCKET_INCOMING_MESSAGE_PREFFIX: 'pubsub',          //  window.socket.on()
+                        SOCKET_MODEL_METHOD_DELIMITER  : ':',               //  window.socket.emit('model.find', data)
+                        SOCKET_MESSAGE_PARSE           : false              //  JSON.parse() all the incomming messages
+                    }
                 },
-                "socket.io": {
-                    SOCKET_INSTANCE                : 'socket',  //  window.socket
-                    SOCKET_EVENT_METHOD            : null,      //  window.socket.on()
-                    SOCKET_SEND_METHOD             : 'emit',    //  window.socket.emit()
-                    SOCKET_INCOMING_MESSAGE_PREFFIX: 'pubsub',  //  window.socket.on()
-                    SOCKET_MODEL_METHOD_DELIMITER  : ':',       //  window.socket.emit('model.find', data)
-                    SOCKET_MESSAGE_PARSE           : false      //  JSON.parse() all the incomming messages
-                }
-            },
-            defaultConfigName = 'socket.io';
+            defaultConfigName = 'socketstream';
 
             this.setConfig = function(name, newConfig) {
                 if (!name || name === '' || typeof name !== 'string' || typeof newConfig !== 'object') {
                     return false;
                 } else {
                     if (config[name]) {
-                        // config[name] = newConfig;
                         angular.extend({}, newConfig, config[name]);
                     } else {
                         config[name] = newConfig;
@@ -55,7 +58,7 @@
                     if (isDefault) {
                         defaultConfigName = name;
                     }
-                    config[name]      = defaults[name];
+                    config[name] = defaults[name];
                     return true;
 
                 } else if (isDefault && config[name] && defaultConfigName !== name) {
@@ -74,7 +77,7 @@
             this.$get =
                 [       '$rootScope', '$q',
                 function($rootScope,   $q) {
-                    var _defaultSend,
+                    var _defaultRPC,
                         _name,
                         _sockets = {};
 
@@ -83,13 +86,13 @@
                     }
 
 
-                    function send(command, config) {
-                        var CALLER   = window[config.SOCKET_INSTANCE][config.SOCKET_SEND_METHOD],
+                    function rpc(command, config) {
+                        var CALLER   = window[config.SOCKET_INSTANCE][config.SOCKET_RPC_METHOD],
                             args     = Array.prototype.slice.apply(arguments),
                             deferred = $q.defer();
 
 
-                        function RPCcallback() {
+                        function rpcCallback() {
                             var error  = Array.prototype.slice.apply(arguments)[0],
                                 result = Array.prototype.slice.apply(arguments)[1];
 
@@ -100,25 +103,23 @@
                                     deferred.resolve(result);
                                 }
 
-                                window[config.SOCKET_INSTANCE].removeListener(command, RPCcallback);
+                                window[config.SOCKET_INSTANCE].removeListener(command, rpcCallback);
 
                             });
                         }
 
 
-                        if (config.SOCKET_INSTANCE === 'socket') {
+                        if (config.SOCKET_TYPE === 'socket.io') {
                             CALLER.apply(window[config.SOCKET_INSTANCE], [command].concat(args.slice(2, args.length)));
 
-                            window[config.SOCKET_INSTANCE].on(command, RPCcallback );
+                            window[config.SOCKET_INSTANCE].on(command, rpcCallback );
 
                             return deferred.promise;
 
-                        } else if (config.SOCKET_INSTANCE === 'ss') {
+                        } else if (config.SOCKET_TYPE === 'socketstream') {
                             CALLER.apply(window[config.SOCKET_INSTANCE], [command].concat(args.slice(2, args.length)).concat(function() {
                                 var error  = Array.prototype.slice.apply(arguments)[0],
                                     result = Array.prototype.slice.apply(arguments)[1];
-
-                                // console.log('arguments', arguments);
 
                                 $rootScope.$apply(function() {
                                     // deferred.notify('Working...');
@@ -140,43 +141,43 @@
                         if (config.hasOwnProperty(_name)) {
 
                             _sockets[_name] = {
-                                send: function(command) {
+                                rpc: function(command) {
                                     var args     = Array.prototype.slice.apply(arguments);
-                                    return send.apply(send, [command, config[_name]].concat(args.slice(1, args.length)));
+                                    return rpc.apply(rpc, [command, config[_name]].concat(args.slice(1, args.length)));
                                 }
                             }
 
                             if (_name === defaultConfigName) {
-                                _defaultSend = _sockets[_name].send;
+                                _defaultRPC = _sockets[_name].rpc;
                             }
                         }
                     }
 
                     /**
-                     * Extend return object with .send() method for each active socket's config
-                     * So each active socket instence .send() method can be called as
+                     * Extend return object with .rpc() method for each active socket's config
+                     * So each active socket instence .rpc() method can be called as
                      *
-                     *     socket['config_name'].send(command, callback)
+                     *     socket['config_name'].rpc(command, callback)
                      * or
-                     *     socket['socketstream'].send(command, callback)
-                     *     socket['socket.io'].send(command, callback)
+                     *     socket['socketstream'].rpc(command, callback)
+                     *     socket['socket.io'].rpc(command, callback)
                      *
                      * Default socket instance caould call as
-                     *     socket.send(command, callback)
+                     *     socket.rpc(command, callback)
                      */
                     return angular.extend(_sockets,
                         {
                             getConfig: getConfig,
-                            send     : _defaultSend
+                            rpc     : _defaultRPC
                         }
                     );
                 }];
         })
 
-        .factory('resourceIO',
-            [       '$rootScope', '$parse', '$q', 'socket',
-            function($rootScope,   $parse,   $q,   socket) {
-                var config       = socket.getConfig(),
+        .factory('$resourceIO',
+            [       '$rootScope', '$parse', '$q', '$socket',
+            function($rootScope,   $parse,   $q,   $socket) {
+                var config       = $socket.getConfig(),
                     EVENT_CALLER,
 
                     DEFAULT_ACTIONS = {
@@ -205,7 +206,7 @@
                     copy           = angular.copy;
 
                 if (!config) {
-                    throw $resourceMinErr('badconf', "[ngResourceIO->socketProvider] Default config for socket instance has not been found! Please use `socketProvider.use('config_name', true);` inside `app.config(){...}` defenition!");
+                    throw $resourceMinErr('badconf', "[ngResourceIO->$socketProvider] Default config for socket instance has not been found! Please use `$socketProvider.use('config_name', true);` inside `app.config(){...}` defenition!");
                 }
 
                 EVENT_CALLER = config.SOCKET_EVENT_METHOD ? window[config.SOCKET_INSTANCE][config.SOCKET_EVENT_METHOD] : window[config.SOCKET_EVENT_METHOD];
@@ -256,7 +257,7 @@
 
                             });
 
-                            listners      = [];
+                            listners = [];
                         }
 
                         reatachListners();
@@ -445,7 +446,7 @@
                                     break;
                                 default:
                                     throw $resourceMinErr('badargs',
-                                        "[ngResourceIO->resourceIO] Expected up to 4 arguments [params, data, success, error], got {0} arguments", arguments.length);
+                                        "[ngResourceIO->$resourceIO] Expected up to 4 arguments [params, data, success, error], got {0} arguments", arguments.length);
                             }
 
                             isInstanceCall           = data instanceof Resource;
@@ -453,13 +454,13 @@
                             responseInterceptor      = action.interceptor && action.interceptor.response || defaultResponseInterceptor;
                             responseErrorInterceptor = action.interceptor && action.interceptor.responseError || undefined;
 
-                            promise = socket.send( modelName + '.' + name, params ).then(function(response) {
+                            promise = $socket.rpc( modelName + config.SOCKET_MODEL_METHOD_DELIMITER + name, params ).then(function(response) {
                                 var data    = response.data,
                                     promise = value.$promise;
 
                                 if (data) {
                                     if (angular.isArray(data) !== Boolean(action.isArray)) {
-                                        throw $resourceMinErr('badcfg', '[ngResourceIO->resourceIO] Error in resource configuration. Expected response' +
+                                        throw $resourceMinErr('badcfg', '[ngResourceIO->$resourceIO] Error in resource configuration. Expected response' +
                                             ' to contain an {0} but got an {1}',
                                             action.isArray ? 'array' : 'object', angular.isArray(data) ? 'array' : 'object');
                                     }
@@ -480,7 +481,7 @@
 
                                         } else {
                                             throw $resourceMinErr('badargs',
-                                                "[ngResourceIO->resourceIO] Mismatch in 'isPath' method call! Method '{0}({1})' for object modifying been called. Server sent wrong response: '{2}'",
+                                                "[ngResourceIO->$resourceIO] Mismatch in 'isPath' method call! Method '{0}({1})' for object modifying been called. Server sent wrong response: '{2}'",
                                                 name, params, JSON.stringify(response));
                                         }
                                     } else {
