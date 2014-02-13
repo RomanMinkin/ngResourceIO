@@ -97,13 +97,15 @@
                                 result = Array.prototype.slice.apply(arguments)[1];
 
                             $rootScope.$apply(function() {
+                                // deferred.notify('Working...');
                                 if (error) {
                                     deferred.reject(error);
+
                                 } else {
                                     deferred.resolve(result);
                                 }
 
-                                window[config.SOCKET_INSTANCE].removeListener(command, rpcCallback);
+                                // window[config.SOCKET_INSTANCE].removeListener(command, rpcCallback);
                             });
                         }
 
@@ -116,20 +118,7 @@
                             return deferred.promise;
 
                         } else if (config.SOCKET_TYPE === 'socketstream') {
-                            CALLER.apply(window[config.SOCKET_INSTANCE], [command].concat(args.slice(2, args.length)).concat(function() {
-                                var error  = Array.prototype.slice.apply(arguments)[0],
-                                    result = Array.prototype.slice.apply(arguments)[1];
-                                $rootScope.$apply(function() {
-                                    // deferred.notify('Working...');
-
-                                    /* Error habdeling */
-                                    if (error) {
-                                        deferred.reject(error);
-                                    } else {
-                                        deferred.resolve(result);
-                                    }
-                                });
-                            }));
+                            CALLER.apply(window[config.SOCKET_INSTANCE], [command].concat(args.slice(2, args.length)).concat(rpcCallback))
                             return deferred.promise;
                         }
                     }
@@ -314,8 +303,8 @@
 
                                 if (!$rootScope.$$listeners[_onName]) {
                                     _i++;
-                                    $rootScope.$on(_onName, function(eventName2, data2){
-                                        cb(data2);
+                                    $rootScope.$on(_onName, function(eventName, data){
+                                        cb(data);
                                     });
                                 }
                             }
@@ -453,7 +442,7 @@
                             responseErrorInterceptor = action.interceptor && action.interceptor.responseError || undefined;
 
                             promise = $socket.rpc( modelName + config.SOCKET_MODEL_METHOD_DELIMITER + name, params ).then(function(response) {
-                                var data    = response.data,
+                                var data    = response,
                                     promise = value.$promise;
 
                                 if (data) {
@@ -488,9 +477,8 @@
                                         value.$promise = promise;
                                     }
                                 }
-
-                                value.$resolved   = true;
-                                response.resource = value;
+                                value.$resolved = true;
+                                response        = value;
 
                                 return response;
                             },

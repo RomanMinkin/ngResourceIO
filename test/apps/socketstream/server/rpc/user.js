@@ -1,9 +1,11 @@
 "use strict";
 
 exports.actions = function(req, res, ss) {
-    var obj = {id : 1111, name: 'Roman'},
-        obj2 = {id : 2222, name: 'Kolya'},
-        obj3 = {id : 3333, name: 'Vasya'};
+    var users = [
+        {id : 1111, name: 'Roman'},
+        {id : 2222, name: 'Kolya'},
+        {id : 3333, name: 'Vasya'}
+    ];
     // return list of actions which can be called publicly
 
 
@@ -13,7 +15,7 @@ exports.actions = function(req, res, ss) {
 
     return {
         find: function() {
-            res(null, 1111);
+            res(null, users);
         },
         findById: function() {
             res(null, {data: obj});
