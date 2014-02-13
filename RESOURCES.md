@@ -1,0 +1,1 @@
+* http://camanjs.com/ - a combination of a simple-to-use interface with advanced and efficient image/canvas editing techniques.

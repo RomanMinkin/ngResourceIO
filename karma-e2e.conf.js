@@ -19,12 +19,34 @@ module.exports = function(config) {
         urlRoot: '/e2e/',
 
         /* List of frameworks you want to use. Typically, you will set this to ['jasmine'], ['mocha'] or ['qunit'] */
-        frameworks: ['ng-scenario'],
+        // frameworks: ['ng-scenario'],
+        frameworks: ['mocha'],
 
         /* list of files / patterns to load in the browser */
         files: [
+            /* need to load libs including current versions of jquery and angular*/
+            'test/libs/jquery.js',
+            'test/libs/angular.js',
+            'node_modules/ng-midway-tester/src/ngMidwayTester.js',
+            'node_modules/should/should.js',
+            // 'test/libs/socket.io.js',
+
+            /* load cource code itself */
+            'src/**/*.js',
+
+            'http://localhost:3000/_serveDev/system?ts=1',
+            'http://localhost:3000/_serveDev/code/app/entry.js?ts=1&pathPrefix=app',
+            'http://localhost:3000/_serveDev/start?ts=1389475575268',
+
             'test/libs/angular-mocks.js',
-            'test/e2e/**/*.e2e.js',
+            'test/e2e/socketstream/**/*.e2e.js',
+
+            /* load client unit tests */
+            // 'test/unit/**/*.spec.js'
+            // 'test/libs/angular-mocks.js',
+            // 'test/e2e/**/*.e2e.js',
+            // 'test/e2e/socketstream/**/*.e2e.js',
+            // 'test/e2e/common/**/*.e2e.js',
         ],
 
         /* list of files to exclude */
@@ -81,8 +103,9 @@ module.exports = function(config) {
             'karma-chrome-launcher',
             'karma-firefox-launcher',
             'karma-phantomjs-launcher',
-            'karma-jasmine',
-            'karma-ng-scenario'
+            // 'karma-jasmine',
+            'karma-mocha',
+            // 'karma-ng-scenario'
         ],
 
         /*

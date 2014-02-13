@@ -1,21 +1,14 @@
-/*global window, console, ss, jQuery*/
+/*global window, console, ss*/
 'use strict';
 
 window.ss = require('socketstream');
 
 ss.server.on('disconnect', function(){
-  console.log('Connection down :-(');
+  console.log('Connection with socketstream server is down :-(');
 });
 
 ss.server.on('reconnect', function(){
-  console.log('Connection back up :-)');
+  console.log('Connection with socketstream server is back up :-)');
 });
 
-ss.server.on('ready', function(){
-
-  // Wait for the DOM to finish loading
-  jQuery(function(){
-
-    // Load app
-  });
-});
+ss.server.on('ready', function(){});

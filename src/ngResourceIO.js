@@ -104,7 +104,6 @@
                                 }
 
                                 window[config.SOCKET_INSTANCE].removeListener(command, rpcCallback);
-
                             });
                         }
 
@@ -120,7 +119,6 @@
                             CALLER.apply(window[config.SOCKET_INSTANCE], [command].concat(args.slice(2, args.length)).concat(function() {
                                 var error  = Array.prototype.slice.apply(arguments)[0],
                                     result = Array.prototype.slice.apply(arguments)[1];
-
                                 $rootScope.$apply(function() {
                                     // deferred.notify('Working...');
 

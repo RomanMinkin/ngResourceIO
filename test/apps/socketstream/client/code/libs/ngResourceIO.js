@@ -1,1 +1,1 @@
-src/ngResourceIO.js
+../../../../../../src/ngResourceIO.js

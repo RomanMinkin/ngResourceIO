@@ -7,13 +7,13 @@ exports.actions = function(req, res, ss) {
     // return list of actions which can be called publicly
 
 
-    setInterval(function(){
-        ss.publish.all('pubsub:test:set', { data: {id: 3333, name: 'Ulya Pokrova'}});
-    }, 10000);
+    // setInterval(function(){
+    //     ss.publish.all('pubsub:test:set', { data: {id: 3333, name: 'Ulya Pokrova'}});
+    // }, 10000);
 
     return {
         find: function() {
-            res(null, {data: [obj, obj2, obj3]});
+            res(null, 1111);
         },
         findById: function() {
             res(null, {data: obj});

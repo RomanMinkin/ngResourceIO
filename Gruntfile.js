@@ -151,7 +151,7 @@ module.exports = function(grunt) {
                 tasks: ['karma:unitBackground:run']
             },
             e2eSocketStream: {
-                files: ['src/*.js'],
+                files: ['src/*.js', 'test/e2e/**/*.js'],
                 tasks: ['karma:e2eSocketStreamBackground:run']
             },
             e2eSocketIO: {
@@ -181,7 +181,8 @@ module.exports = function(grunt) {
                         'test/e2e/common/**/*.e2e.js',
                     ],
                     proxies: {
-                        '/': 'http://localhost:3000/'
+                        // '/': 'http://localhost:3000/'
+                        '/': 'http://localhost:9000/'
                     }
                 },
                 browsers: process.env.TRAVIS ? 'PhantomJS' : grunt.option('browsers') ? grunt.option('browsers').split(',') : ['Chrome']
@@ -190,13 +191,14 @@ module.exports = function(grunt) {
                 background: true,
                 options: {
                     configFile: './karma-e2e.conf.js',
-                    files: [
-                        'node_modules/ng-midway-tester/src/ngMidwayTester.js',
-                        'test/e2e/socketstream/**/*.e2e.js',
-                        'test/e2e/common/**/*.e2e.js',
-                    ],
+                    // files: [
+                    //     'node_modules/ng-midway-tester/src/ngMidwayTester.js',
+                    //     'test/e2e/socketstream/**/*.e2e.js',
+                    //     // 'test/e2e/common/**/*.e2e.js',
+                    // ],
                     proxies: {
-                        '/': 'http://localhost:3000/'
+                        // '/': 'http://localhost:3000/'
+                        '/': 'http://localhost:9000/'
                     }
                 },
                 browsers: process.env.TRAVIS ? 'PhantomJS' : grunt.option('browsers') ? grunt.option('browsers').split(',') : ['Chrome']
