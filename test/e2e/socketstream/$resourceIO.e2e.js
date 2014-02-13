@@ -39,26 +39,9 @@ describe('$resourceIO', function() {
 
             $socket.rpc('user.find', { id: 111}).then(function(result) {
                 resolvedValue = result;
-            }, function(reason) {
-                resolvedValue = reason;
-            });
-
-            setTimeout(function(){
-                $rootScope.$apply();
                 (resolvedValue).should.equal(1111);
                 done();
-            },100)
+            });
         })
     });
-
-
-    // describe('.setConfig()', function() {
-    //     it('should load SocketStream config', function(){
-    //         ss.should.be.an.instanceOf(Object);
-
-    //         var resource = new $ngResourceIO('user');
-
-    //         // console.log('ss>>>>>', );
-    //     });
-    // });
 });
