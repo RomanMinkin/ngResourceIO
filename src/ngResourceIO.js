@@ -182,7 +182,6 @@
                     DEFAULT_EVENTS = {
                         'update' : {idField: 'id',               fn: function(obj, data) { copy(data, obj) } },
                         'set'    : {idField: 'id', isPath: true, fn: function(obj, data) { extend(obj, data) } },
-                        'push'   : {},
                         'remove' : {idField: 'id'}
                     },
 
@@ -198,9 +197,9 @@
 
                 EVENT_CALLER = config.SOCKET_EVENT_METHOD ? window[config.SOCKET_INSTANCE][config.SOCKET_EVENT_METHOD] : window[config.SOCKET_EVENT_METHOD];
 
-                function ResourceFactory(modelName, configName, actions, events) {
-                    var onName   = [config.SOCKET_INCOMING_MESSAGE_PREFFIX, modelName ].join(':'),
-                        listners = [];
+                function ResourceIOFactory(modelName, settings, actions, events) {
+                    var onName   = [config.SOCKET_INCOMING_MESSAGE_PREFFIX, modelName ].join(config.SOCKET_MODEL_METHOD_DELIMITER),
+                        listener = [];
 
                     actions = extend({}, DEFAULT_ACTIONS, actions);
                     events  = extend({}, DEFAULT_EVENTS, events);
@@ -209,28 +208,59 @@
                         return response.resource;
                     }
 
-                    function Resource(value) {
+                    function turnListenerOn() {
+                        if (EVENT_CALLER.listeners(onName).length === 0) {
+                            EVENT_CALLER.on(onName, function (eventName, response) {
+                                /**
+                                 * Broadcasting the event
+                                 * remove the id from the onName: 'pubsub:user:remove:123123' => 'pubsub:user:remove'
+                                 * So the ritem removement from the scope shoul be happen ut of resource object
+                                 *
+                                 * Ex.
+                                 *     $scope.$on('pubsub:test:remove', function(evnt, obj) {
+                                 *         ...do stuff...
+                                 *     });
+                                 */
+                                $rootScope.$apply(function() {
+                                    console.log('regester broadcast', onName, eventName);
+                                    $rootScope.$broadcast(onName, eventName, response);
+                                });
+                            });
+                            return true;
+                        }
+
+                        return false;
+                    }
+
+                    function ResourceIO(value) {
                         var self = this,
-                            listners = [],
-                            off,
                             reatachOff;
 
                         copy(value || {}, this);
 
-                        function reatachListners() {
-                            forEach(events, function(_event, _name) {
-                                var _onName = onName.concat(':'+ _name),
-                                    _id     = _event.idField || 'id';
+                        self.$_listeners = {};
 
-                                off = $rootScope.$on(_onName, function(eventName, data) {
-                                    if ( self[_id] === data[_id] ) {
+                        /**
+                         * Re-attach listener
+                         *
+                         * @return {Function} return off() function for removing listner
+                         */
+                        function reatachListener() {
+                            return $rootScope.$on(onName, function(eventName, response) {
+                                var _event, _idField;
+
+                                if (events[eventName]) {
+                                    _event   = events[eventName];
+                                    _idField = _event.idField || 'id';
+
+                                    if ( self[_idField] === response[_idField] ) {
 
                                         if (_event.fn && typeof _event.fn === 'function') {
-                                            _event.fn(self, data);
+                                            _event.fn(self, response);
                                         }
 
-                                        if (_name === 'remove') {
-                                            forEach(self.listners, function(off) {
+                                        if (eventName === 'remove') {
+                                            forEach(self.$_listeners, function(off) {
                                                 off();
                                             })
                                             if (typeof reatachOff === 'function') {
@@ -238,84 +268,32 @@
                                             }
                                         }
                                     }
-                                });
-
-                                listners.push({name: _name, off: off});
-
+                                }
                             });
-
-                            listners = [];
                         }
 
-                        reatachListners();
-                        self.$_listners = listners;
+                        self.$_listeners[onName] = reatachListener();
 
                         reatachOff = $rootScope.$on(onName.concat(':reatach'), function() {
-                            reatachListners();
-                            self.$_listners = listners;
+                            self.$_listeners = reatachListener();
                         });
 
                     }
 
-                    function turnListnersOn() {
-                        var _i = 0;
-                        forEach(events, function(_event, _name) {
-                            var _onName = onName.concat(':'+ _name),
-                                func;
-
-                            if (EVENT_CALLER.listeners(_onName).length === 0) {
-                                func = function(response) {
-                                    var data    = response.data;
-                                    /**
-                                     * Broadcasting the event
-                                     * remove the id from the onName: 'pubsub:user:remove:123123' => 'pubsub:user:remove'
-                                     * So the ritem removement from the scope shoul be happen ut of resource object
-                                     *
-                                     * Ex.
-                                     *     $scope.$on('pubsub:test:remove', function(evnt, obj) {
-                                     *         ...do stuff...
-                                     *     });
-                                     */
-                                    $rootScope.$apply(function() {
-                                        console.log('regester broadcast', _onName);
-                                        $rootScope.$broadcast(_onName, data);
-                                    });
-                                };
-                                EVENT_CALLER.on(_onName, func);
-                                listners.push({name: _onName, func: func});
-                                _i++;
+                    ResourceIO['$on'] = function(eventName, cb) {
+                        if (events[eventName]) {
+                            if (!!$rootScope.$$listeners[eventName]) {
+                                $rootScope.$on(onName, function(eventName, data){
+                                    cb(data);
+                                });
                             }
-                        });
-                        return _i ? true : false;
-                    }
-
-                    turnListnersOn();
-
-                    Resource['$on'] = function(name, cb) {
-                        var _onName,
-                            _i;
-
-                        _i = turnListnersOn();
-
-                        forEach(events, function(_event, _name) {
-                            if (name === _name) {
-                                _onName = onName.concat(':'+ _name);
-
-                                if (!$rootScope.$$listeners[_onName]) {
-                                    _i++;
-                                    $rootScope.$on(_onName, function(eventName, data){
-                                        cb(data);
-                                    });
-                                }
-                            }
-                        });
+                        }
 
                         /**
-                         * Which means come listners been attached, do we do not watnt to
+                         * Which means come listener been attached, do we do not watnt to
                          * call ':reatach' one more time
                          */
-                        console.log('_i', _i);
-                        if (_i) {
+                        if (turnListenerOn()) {
                             $rootScope.$broadcast(onName.concat(':reatach'));
                             console.log('$on', $rootScope.$$listeners);
                         }
@@ -327,7 +305,7 @@
                      * @param  {Function} cb
                      * @return {Void}
                      */
-                    Resource['$off'] = function(complite, name) {
+                    ResourceIO['$off'] = function(complite, name) {
                         var _onName,
                             _events = events;
 
@@ -351,7 +329,7 @@
                             }
 
                             if (EVENT_CALLER.listeners(_onName).length > 0) {
-                                forEach(listners, function(listner) {
+                                forEach(listener, function(listner) {
                                     if (listner.name === _onName) {
                                         if (name) {
                                             if (name === _name) {
@@ -366,13 +344,13 @@
                                 });
                             }
                         });
-                        listners = [];
+                        listener = [];
                         console.log('$off', $rootScope.$$listeners);
                     }
 
-                    Resource.prototype['$on']  = Resource.$on;
-                    Resource.prototype['$off'] = function(name) {
-                        forEach(this.$_listners, function(listner) {
+                    ResourceIO.prototype['$on']  = ResourceIO.$on;
+                    ResourceIO.prototype['$off'] = function(name) {
+                        forEach(this.$_listeners, function(listner) {
                             if (name) {
                                 if (listner.name === name) {
                                     listner.off();
@@ -394,7 +372,7 @@
                             getter,
                             setter;
 
-                        Resource[name] = function(a1, a2, a3, a4) {
+                        ResourceIO[name] = function(a1, a2, a3, a4) {
                             var params = {}, data, success, error;
 
                             switch (arguments.length) {
@@ -436,8 +414,8 @@
                                         "[ngResourceIO->$resourceIO] Expected up to 4 arguments [params, data, success, error], got {0} arguments", arguments.length);
                             }
 
-                            isInstanceCall           = data instanceof Resource;
-                            value                    = isInstanceCall ? data : (action.isArray ? [] : new Resource(data));
+                            isInstanceCall           = data instanceof ResourceIO;
+                            value                    = isInstanceCall ? data : (action.isArray ? [] : new ResourceIO(data));
                             responseInterceptor      = action.interceptor && action.interceptor.response || defaultResponseInterceptor;
                             responseErrorInterceptor = action.interceptor && action.interceptor.responseError || undefined;
 
@@ -454,8 +432,7 @@
                                     if (action.isArray) {
                                         value.length = 0;
                                         forEach(data, function(item) {
-                                            value.push(new Resource(item));
-                                            // bindEvents(item);
+                                            value.push(new ResourceIO(item));
                                         });
 
                                     } else if (action.isPath && !action.isArray) {
@@ -464,7 +441,6 @@
 
                                         if (getter(data)) {
                                             setter(value, getter(data));
-                                            // bindEvents(value);
 
                                         } else {
                                             throw $resourceMinErr('badargs',
@@ -473,7 +449,6 @@
                                         }
                                     } else {
                                         copy(data, value);
-                                        // bindEvents(value);
                                         value.$promise = promise;
                                     }
                                 }
@@ -514,19 +489,22 @@
 
                         };
 
-                        Resource.prototype['$' + name] = function(params, success, error) {
+                        ResourceIO.prototype['$' + name] = function(params, success, error) {
                             if (isFunction(params)) {
                                 error = success;
                                 success = params;
                                 params = {};
                             }
-                            var result = Resource[name](params, this, success, error);
+                            var result = ResourceIO[name](params, this, success, error);
                             return result.$promise || result;
                         };
                     });
-                    return Resource;
+
+                    turnListenerOn();
+
+                    return ResourceIO;
                 }
-                return ResourceFactory;
+                return ResourceIOFactory;
             }
         ]);
 })( angular );
