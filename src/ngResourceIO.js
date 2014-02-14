@@ -180,6 +180,7 @@
                     }
                     ,
                     DEFAULT_EVENTS = {
+                        'new'    : {},
                         'update' : {idField: 'id',               fn: function(obj, data) { copy(data, obj) } },
                         'set'    : {idField: 'id', isPath: true, fn: function(obj, data) { extend(obj, data) } },
                         'remove' : {idField: 'id'}
