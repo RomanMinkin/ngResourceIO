@@ -11,12 +11,13 @@ describe('$resourceIO', function() {
     var $socketProvider,
         $rootScope,
         ResourceIO,
-        resource;
+        resource,
         usersData = [
-        {id : 1111, name: 'Roman'},
-        {id : 2222, name: 'Kolya'},
-        {id : 3333, name: 'Vasya'}
-    ];
+            {id : 1111, name: 'Roman'},
+            {id : 2222, name: 'Kolya'},
+            {id : 3333, name: 'Vasya'}
+        ]
+    ;
 
     beforeEach(module('ngResourceIO', function(_$socketProvider_) {
         $socketProvider = _$socketProvider_;
@@ -87,7 +88,55 @@ describe('$resourceIO', function() {
             });
         });
 
-        describe('#on', function() {
+        describe('#set', function() {
+            it('should be a function', function() {
+                resource.set.should.be.an.instanceOf(Function);
+            });
+        });
+
+        describe('#get', function() {
+            it('should be a function', function() {
+                resource.get.should.be.an.instanceOf(Function);
+            });
+        });
+
+        describe('#push', function() {
+            it('should be a function', function() {
+                resource.push.should.be.an.instanceOf(Function);
+            });
+        });
+
+        describe('#addToSet', function() {
+            it('should be a function', function() {
+                resource.addToSet.should.be.an.instanceOf(Function);
+            });
+        });
+
+        describe('#inc', function() {
+            it('should be a function', function() {
+                resource.inc.should.be.an.instanceOf(Function);
+            });
+        });
+
+        describe('#save', function() {
+            it('should be a function', function() {
+                resource.save.should.be.an.instanceOf(Function);
+            });
+        });
+
+        describe('#remove', function() {
+            it('should be a function', function() {
+                resource.remove.should.be.an.instanceOf(Function);
+            });
+        });
+
+        describe('#$off', function() {
+            it('should be a function', function() {
+                resource.$off.should.be.an.instanceOf(Function);
+            });
+        });
+
+        describe('#$on', function() {
             it('should be a function', function() {
                 resource.$on.should.be.an.instanceOf(Function);
             });
@@ -97,42 +146,6 @@ describe('$resourceIO', function() {
                 // $rootScope.$$listeners.should.be.eql({});
                 console.log('$rootScope.$$listeners', $rootScope.$$listeners);
             });
-        });
-
-        it('should be a function', function() {
-            resource.set.should.be.an.instanceOf(Function);
-        });
-
-        it('should be a function', function() {
-            resource.get.should.be.an.instanceOf(Function);
-        });
-
-        it('should be a function', function() {
-            resource.push.should.be.an.instanceOf(Function);
-        });
-
-        it('should be a function', function() {
-            resource.addToSet.should.be.an.instanceOf(Function);
-        });
-
-        it('should be a function', function() {
-            resource.inc.should.be.an.instanceOf(Function);
-        });
-
-        it('should be a function', function() {
-            resource.inc.should.be.an.instanceOf(Function);
-        });
-
-        it('should be a function', function() {
-            resource.save.should.be.an.instanceOf(Function);
-        });
-
-        it('should be a function', function() {
-            resource.remove.should.be.an.instanceOf(Function);
-        });
-
-        it('should be a function', function() {
-            resource.$off.should.be.an.instanceOf(Function);
         });
     });
 });

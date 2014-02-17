@@ -4,6 +4,25 @@
     "use strict";
     var $resourceMinErr = angular.$$minErr('ngResourceIO');
 
+    /**
+     * Create a shallow copy of an object and clear other fields from the destination
+     */
+    function shallowClearAndCopy(src, dst) {
+      dst = dst || {};
+
+      angular.forEach(dst, function(value, key){
+        delete dst[key];
+      });
+
+      for (var key in src) {
+        if (src.hasOwnProperty(key) && !(key.charAt(0) === '$' && key.charAt(1) === '$')) {
+          dst[key] = src[key];
+        }
+      }
+
+      return dst;
+    }
+
     angular.module('ngResourceIO', [])
 
         .provider('$socket', function() {
@@ -237,7 +256,7 @@
                         var self = this,
                             reatachOff;
 
-                        copy(value || {}, this);
+                        shallowClearAndCopy(value || {}, this);
 
                         self.$_listeners = {};
 
@@ -267,6 +286,9 @@
                                             if (typeof reatachOff === 'function') {
                                                 reatachOff();
                                             }
+
+                                        } else if (eventName === 'reatach') {
+
                                         }
                                     }
                                 }
@@ -275,9 +297,9 @@
 
                         self.$_listeners[onName] = reatachListener();
 
-                        reatachOff = $rootScope.$on(onName.concat(':reatach'), function() {
-                            self.$_listeners = reatachListener();
-                        });
+                        // reatachOff = $rootScope.$on(onName, function(eventName) {
+                        //     self.$_listeners = reatachListener();
+                        // });
 
                     }
 
@@ -449,7 +471,7 @@
                                                 name, params, JSON.stringify(response));
                                         }
                                     } else {
-                                        copy(data, value);
+                                        shallowClearAndCopy(data, value);
                                         value.$promise = promise;
                                     }
                                 }
