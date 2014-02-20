@@ -34,8 +34,9 @@
                         SOCKET_EVENT_METHOD            : 'event',           //   window.ss.event.on()
                         SOCKET_RPC_METHOD              : 'rpc',             //   window.ss.rpc()
                         SOCKET_SEND_METHOD             : 'send',            //   window.ss.send()
-                        SOCKET_INCOMING_MESSAGE_PREFFIX: 'pubsub',          //   window.ss.event.on()
                         SOCKET_MODEL_METHOD_DELIMITER  : '.',               //   window.ss.rpc('model.find', data)
+                        SOCKET_MODEL_EVENT_PREFFIX     : 'pubsub',          //   window.ss.event.on()
+                        SOCKET_MODEL_EVENT_DELIMITER   : ':',               //   window.ss.event.on('pubsub.user', eventName, data)
                         SOCKET_MESSAGE_PARSE           : false              //   JSON.parse() all the incomming messages
                     },
                     "socket.io": {
@@ -44,7 +45,7 @@
                         SOCKET_EVENT_METHOD            : null,              //  window.socket.on()
                         SOCKET_RPC_METHOD              : null,              //  window.socket.emit()
                         SOCKET_SEND_METHOD             : 'send',            //  window.socket.send()
-                        SOCKET_INCOMING_MESSAGE_PREFFIX: 'pubsub',          //  window.socket.on()
+                        SOCKET_MODEL_EVENT_PREFFIX     : 'pubsub',          //  window.socket.on()
                         SOCKET_MODEL_METHOD_DELIMITER  : ':',               //  window.socket.emit('model.find', data)
                         SOCKET_MESSAGE_PARSE           : false              //  JSON.parse() all the incomming messages
                     }
@@ -218,7 +219,7 @@
                 EVENT_CALLER = config.SOCKET_EVENT_METHOD ? window[config.SOCKET_INSTANCE][config.SOCKET_EVENT_METHOD] : window[config.SOCKET_EVENT_METHOD];
 
                 function ResourceIOFactory(modelName, settings, actions, events) {
-                    var onName   = [config.SOCKET_INCOMING_MESSAGE_PREFFIX, modelName ].join(config.SOCKET_MODEL_METHOD_DELIMITER),
+                    var onName   = [config.SOCKET_MODEL_EVENT_PREFFIX, modelName ].join(config.SOCKET_MODEL_EVENT_DELIMITER),
                         listener = [];
 
                     actions = extend({}, DEFAULT_ACTIONS, actions);
@@ -303,7 +304,7 @@
 
                     }
 
-                    ResourceIO['$on'] = function(eventName, cb) {
+                    ResourceIO['on'] = function(eventName, cb) {
                         if (events[eventName]) {
                             if (!!$rootScope.$$listeners[eventName]) {
                                 $rootScope.$on(onName, function(eventName, data){
@@ -328,7 +329,7 @@
                      * @param  {Function} cb
                      * @return {Void}
                      */
-                    ResourceIO['$off'] = function(complite, name) {
+                    ResourceIO['off'] = function(complite, name) {
                         var _onName,
                             _events = events;
 
@@ -371,7 +372,7 @@
                         console.log('$off', $rootScope.$$listeners);
                     }
 
-                    ResourceIO.prototype['$on']  = ResourceIO.$on;
+                    ResourceIO.prototype['$on']  = ResourceIO.on;
                     ResourceIO.prototype['$off'] = function(name) {
                         forEach(this.$_listeners, function(listner) {
                             if (name) {

@@ -57,7 +57,7 @@ describe('$resourceIO', function() {
      *  'remove' : {idField: 'id'}
      *
      */
-    describe('$resourceIO()', function() {
+    describe('new $resourceIO()', function() {
         beforeEach(inject(function($resourceIO) {
             ResourceIO = $resourceIO;
             resource   = new ResourceIO('user');
@@ -130,21 +130,20 @@ describe('$resourceIO', function() {
             });
         });
 
-        describe('#$off', function() {
+        describe('#off', function() {
             it('should be a function', function() {
-                resource.$off.should.be.an.instanceOf(Function);
+                resource.off.should.be.an.instanceOf(Function);
             });
         });
 
-        describe('#$on', function() {
+        describe('#on', function() {
             it('should be a function', function() {
-                resource.$on.should.be.an.instanceOf(Function);
+                resource.on.should.be.an.instanceOf(Function);
             });
 
-            it('should create default listners in $rootScope.$$listeners by default', function() {
-                resource.$on();
-                // $rootScope.$$listeners.should.be.eql({});
-                console.log('$rootScope.$$listeners', $rootScope.$$listeners);
+            it('should not create any listners in $rootScope.$$listeners by default', function() {
+                resource.on();
+                $rootScope.$$listeners.should.be.eql({});
             });
         });
     });
