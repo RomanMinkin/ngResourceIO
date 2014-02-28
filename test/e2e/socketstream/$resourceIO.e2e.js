@@ -1,4 +1,4 @@
-/* global ss, should */
+/* global ss */
 
 /* Docs
    http://docs.angularjs.org/guide/dev_guide.e2e-testing
@@ -71,6 +71,10 @@ describe('$resourceIO', function() {
             $rootScope.$$listeners.should.be.eql({});
         });
 
+        it('should create  create any listners in $rootScope.$$listeners by default', function() {
+            $rootScope.$$listeners.should.be.eql({});
+        });
+
         describe('#find', function() {
             it('should be a function', function() {
                 resource.find.should.be.an.instanceOf(Function);
@@ -78,7 +82,7 @@ describe('$resourceIO', function() {
 
             it('should query array with resources', function(done) {
                 resource.find(function(err, data) {
-                    (err == null).should.be.ok;
+                    (err == null).should.be.equal(true);
                     data.should.be.an.instanceOf(Array).and.have.lengthOf(3);
                     data[0].should.be.an.instanceOf(resource);
                     data[1].should.be.an.instanceOf(resource);

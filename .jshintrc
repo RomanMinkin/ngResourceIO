@@ -19,6 +19,7 @@
     "sub"     : true,
     "supernew": true,
     "node"    : true,
+    "eqnull"  : true,
     "onevar"  : true,
     "unused"  : true,
     "multistr": true,
