@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 exports.actions = function(req, res, ss) {
     var users = [
@@ -6,40 +6,39 @@ exports.actions = function(req, res, ss) {
         {id : 2222, name: 'Kolya'},
         {id : 3333, name: 'Vasya'}
     ];
-    // return list of actions which can be called publicly
-
-
-    // setInterval(function(){
-    //     ss.publish.all('pubsub:test:set', { data: {id: 3333, name: 'Ulya Pokrova'}});
-    // }, 10000);
 
     return {
         find: function() {
             res(null, users);
         },
         findById: function() {
-            res(null, {data: obj});
+            res(null, users);
         },
         set: function() {
-            obj.location = {
-                address: 'New York'
-            };
-            res(null, {
-                data: {
-                    'name': obj.location.address
-                    // location: {
-                    //     address: obj.location.address
-                    // }
-                }
-            });
+            res(null, users);
         },
         save: function() {
-            obj.name = 'Saved';
-            res(null, {data: obj});
+            res(null, users);
         },
         remove: function() {
-            res(null, {data: {id: obj.id}});
+            res(null, users);
+            res(null, {id: users[0].id});
         },
+
+        _callbackEventRemove: function(id) {
+            ss.publish.all('pubsub:user', 'remove', id);
+            res(null, true);
+        },
+
+        _callbackEventSet: function(id, fieldName, newValue) {
+            var response = {};
+
+            response['id'] = id;
+            response[fieldName] = newValue;
+
+            ss.publish.all('pubsub:user', 'set', response);
+            res(null, true);
+        }
 
     };
 };

@@ -219,8 +219,8 @@
                 EVENT_CALLER = config.SOCKET_EVENT_METHOD ? window[config.SOCKET_INSTANCE][config.SOCKET_EVENT_METHOD] : window[config.SOCKET_EVENT_METHOD];
 
                 function ResourceIOFactory(modelName, settings, actions, events) {
-                    var onName   = [config.SOCKET_MODEL_EVENT_PREFFIX, modelName ].join(config.SOCKET_MODEL_EVENT_DELIMITER),
-                        listener = [];
+                    var onName    = [config.SOCKET_MODEL_EVENT_PREFFIX, modelName ].join(config.SOCKET_MODEL_EVENT_DELIMITER),
+                        listeners = [];
 
                     actions = extend({}, DEFAULT_ACTIONS, actions);
                     events  = extend({}, DEFAULT_EVENTS, events);
@@ -243,13 +243,12 @@
                                  *     });
                                  */
                                 $rootScope.$apply(function() {
-                                    console.log('regester broadcast', onName, eventName);
+                                    console.log('regester broadcast', onName, eventName, response);
                                     $rootScope.$broadcast(onName, eventName, response);
                                 });
                             });
                             return true;
                         }
-
                         return false;
                     }
 
@@ -264,10 +263,10 @@
                         /**
                          * Re-attach listener
                          *
-                         * @return {Function} return off() function for removing listner
+                         * @return {Function} return off() function for removing listener
                          */
                         function reatachListener() {
-                            return $rootScope.$on(onName, function(eventName, response) {
+                            return $rootScope.$on(onName, function ResourceIOinstanceListener(event, eventName, response) {
                                 var _event, _idField;
 
                                 if (events[eventName]) {
@@ -353,7 +352,7 @@
                             }
 
                             if (EVENT_CALLER.listeners(_onName).length > 0) {
-                                forEach(listener, function(listner) {
+                                forEach(listeners, function(listner) {
                                     if (listner.name === _onName) {
                                         if (name) {
                                             if (name === _name) {
@@ -368,7 +367,7 @@
                                 });
                             }
                         });
-                        listener = [];
+                        listeners = [];
                         console.log('$off', $rootScope.$$listeners);
                     }
 

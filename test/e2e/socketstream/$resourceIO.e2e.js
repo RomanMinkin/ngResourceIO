@@ -67,13 +67,9 @@ describe('$resourceIO', function() {
             resource.should.be.an.instanceOf(Function);
         });
 
-        it('should not create any listners in $rootScope.$$listeners by default', function() {
+        it('should not create any listners in $rootScope.$$listeners by default', inject(function($rootScope) {
             $rootScope.$$listeners.should.be.eql({});
-        });
-
-        it('should create  create any listners in $rootScope.$$listeners by default', function() {
-            $rootScope.$$listeners.should.be.eql({});
-        });
+        }));
 
         describe('#find', function() {
             it('should be a function', function() {
@@ -88,6 +84,43 @@ describe('$resourceIO', function() {
                     data[1].should.be.an.instanceOf(resource);
                     data[2].should.be.an.instanceOf(resource);
                     done();
+                });
+            });
+
+            it('should create listener for each new $resourceIO instance', function(done) {
+                inject(function($rootScope) {
+                    resource.find(function() {
+                        $rootScope.$$listeners['pubsub:user'].should.be.an.instanceOf(Array).and.have.lengthOf(3);
+                        done();
+                    });
+                });
+            });
+        });
+
+        describe('event', function() {
+            var _data;
+
+            beforeEach(function(done) {
+                resource.find(function(err, data) {
+                    _data = data;
+                    done();
+                });
+            });
+
+            describe('@set', function() {
+                it('should set a new value to the field', function(done) {
+                    inject(function($socket) {
+                        var id        = _data[0].id,
+                            fieldName = 'name',
+                            newName   = 'my new Name';
+
+                        $socket.rpc('user._callbackEventSet', id, fieldName, newName).then(function(response) {
+                            response.should.be.equal(true);
+                            _data[0].id.should.be.equal(id);
+                            _data[0][fieldName].should.be.equal(newName);
+                            done();
+                        })
+                    });
                 });
             });
         });
