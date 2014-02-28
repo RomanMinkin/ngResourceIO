@@ -202,7 +202,11 @@
                     DEFAULT_EVENTS = {
                         'new'    : {},
                         'update' : {idField: 'id',               fn: function(obj, newObj) { copy(newObj, obj) } },
-                        'set'    : {idField: 'id', isPath: true, fn: function(obj, data) { extend(obj, data) } },
+                        'set'    : {idField: 'id', isPath: true, fn: function(obj, data) {
+                            console.log('obj, data', obj, data);
+                            extend(obj, data)
+                            console.log('obj, data', obj, data);
+                        } },
                         'remove' : {idField: 'id'}
                     },
 
@@ -277,9 +281,8 @@
 
                                         if (_event.fn && typeof _event.fn === 'function') {
                                             _event.fn(self, response);
-                                        }
 
-                                        if (eventName === 'remove') {
+                                        } else if (eventName === 'remove') {
                                             forEach(self.$_listeners, function(off) {
                                                 off();
                                             })
@@ -303,23 +306,30 @@
 
                     }
 
-                    ResourceIO['on'] = function(eventName, cb) {
-                        if (events[eventName]) {
-                            if (!!$rootScope.$$listeners[eventName]) {
-                                $rootScope.$on(onName, function(eventName, data){
-                                    cb(data);
-                                });
-                            }
+                    ResourceIO['on'] = function(_eventName, cb) {
+                        if (events[_eventName]) {
+                            $rootScope.$on(onName, function ResourceIOListener(event, eventName, response) {
+                                if (_eventName === eventName) {
+                                    switch (_eventName) {
+                                        case 'new':
+                                            cb(new ResourceIO(response));
+                                            break;
+
+                                        default:
+                                            cb(response);
+                                    }
+                                }
+                            });
                         }
 
                         /**
                          * Which means come listener been attached, do we do not watnt to
                          * call ':reatach' one more time
                          */
-                        if (turnListenerOn()) {
-                            $rootScope.$broadcast(onName.concat(':reatach'));
-                            console.log('$on', $rootScope.$$listeners);
-                        }
+                        // if (turnListenerOn()) {
+                        //     $rootScope.$broadcast(onName.concat(':reatach'));
+                        //     console.log('$on', $rootScope.$$listeners);
+                        // }
                     }
 
                     /**

@@ -39,6 +39,7 @@ module.exports = function(config) {
             'http://localhost:3000/_serveDev/start?ts=1389475575268',
 
             'test/libs/angular-mocks.js',
+            'src/mocks/ngResourceIOmock.js',
             'test/e2e/socketstream/**/*.e2e.js',
 
             /* load client unit tests */

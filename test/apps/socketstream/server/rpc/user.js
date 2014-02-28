@@ -2,10 +2,11 @@
 
 exports.actions = function(req, res, ss) {
     var users = [
-        {id : 1111, name: 'Roman'},
-        {id : 2222, name: 'Kolya'},
-        {id : 3333, name: 'Vasya'}
-    ];
+            {id : 1, name: 'Roman'},
+            {id : 2, name: 'Kolya'},
+            {id : 3, name: 'Vasya'}
+        ],
+        newUser = {id : 4, name: 'Petya'};
 
     return {
         find: function() {
@@ -25,20 +26,24 @@ exports.actions = function(req, res, ss) {
             res(null, {id: users[0].id});
         },
 
-        _callbackEventRemove: function(id) {
-            ss.publish.all('pubsub:user', 'remove', id);
+        _mockEventNew: function() {
+            ss.publish.all('pubsub:user', 'new', newUser);
             res(null, true);
         },
 
-        _callbackEventSet: function(id, fieldName, newValue) {
-            var response = {};
-
-            response['id'] = id;
-            response[fieldName] = newValue;
-
-            ss.publish.all('pubsub:user', 'set', response);
+        _mockEventUpdate: function(updatedUser) {
+            ss.publish.all('pubsub:user', 'update', updatedUser);
             res(null, true);
-        }
+        },
 
+        _mockEventSet: function(dataToSet) {
+            ss.publish.all('pubsub:user', 'set', dataToSet);
+            res(null, true);
+        },
+
+        _mockEventRemove: function(user) {
+            ss.publish.all('pubsub:user', 'remove', user);
+            res(null, true);
+        },
     };
 };
