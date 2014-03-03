@@ -151,11 +151,11 @@ module.exports = function(grunt) {
                 tasks: ['karma:unitBackground:run']
             },
             e2eSocketStream: {
-                files: ['src/*.js', 'test/e2e/**/*.js'],
+                files: ['src/**/*.js', 'test/e2e/**/*.js'],
                 tasks: ['karma:e2eSocketStreamBackground:run']
             },
             e2eSocketIO: {
-                files: ['src/*.js'],
+                files: ['src/**/*.js'],
                 tasks: ['karma:e2eSocketIOBackground:run']
             }
         },
@@ -176,10 +176,6 @@ module.exports = function(grunt) {
                 singleRun: true,
                 options: {
                     configFile: './karma-e2e.conf.js',
-                    files: [
-                        'test/e2e/socketstream/**/*.e2e.js',
-                        'test/e2e/common/**/*.e2e.js',
-                    ],
                     proxies: {
                         // '/': 'http://localhost:3000/'
                         '/': 'http://localhost:9000/'
@@ -191,11 +187,6 @@ module.exports = function(grunt) {
                 background: true,
                 options: {
                     configFile: './karma-e2e.conf.js',
-                    // files: [
-                    //     'node_modules/ng-midway-tester/src/ngMidwayTester.js',
-                    //     'test/e2e/socketstream/**/*.e2e.js',
-                    //     // 'test/e2e/common/**/*.e2e.js',
-                    // ],
                     proxies: {
                         // '/': 'http://localhost:3000/'
                         '/': 'http://localhost:9000/'

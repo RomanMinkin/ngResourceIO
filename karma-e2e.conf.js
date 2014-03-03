@@ -31,15 +31,15 @@ module.exports = function(config) {
             'node_modules/should/should.js',
             // 'test/libs/socket.io.js',
 
-            /* load cource code itself */
-            'src/**/*.js',
 
             'http://localhost:3000/_serveDev/system?ts=1',
             'http://localhost:3000/_serveDev/code/app/entry.js?ts=1&pathPrefix=app',
             'http://localhost:3000/_serveDev/start?ts=1389475575268',
 
+            /* load cource code itself */
+            'src/**/*.js',
+
             'test/libs/angular-mocks.js',
-            'src/mocks/ngResourceIOmock.js',
             'test/e2e/socketstream/**/*.e2e.js',
 
             /* load client unit tests */

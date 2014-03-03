@@ -12,7 +12,7 @@ describe('$resourceIO', function() {
         $rootScope,
         ResourceIO,
         resource,
-        usersData = [
+        usersData = [   // sync with back-end's data in `test/apps/socketstream/server/rpc/user.js`
             {id : 1, name: 'Roman'},
             {id : 2, name: 'Kolya'},
             {id : 3, name: 'Vasya'}
@@ -57,7 +57,7 @@ describe('$resourceIO', function() {
      *  'remove' : {idField: 'id'}
      *
      */
-    describe('new $resourceIO', function() {
+    describe('ResourceIO', function() {
         beforeEach(inject(function($resourceIO) {
             ResourceIO = $resourceIO;
             resource   = new ResourceIO('user');
@@ -71,7 +71,85 @@ describe('$resourceIO', function() {
             $rootScope.$$listeners.should.be.eql({});
         }));
 
-        describe('event', function() {
+        it('should create only one listener for `ss.event`', function() {
+            ss.event.listeners('pubsub:user').should.be.an.instanceOf(Array).and.have.lengthOf(1);
+        });
+
+        it('should not create a listener for `ss.event` if setting `noListeners` passed', function() {
+            ss.event.removeAllListeners();
+            resource = new ResourceIO('user', {noListeners: true});
+
+            ss.event.listeners('pubsub:user').should.be.an.instanceOf(Array).and.have.lengthOf(0);
+        });
+
+        it('should not create a listener for `ss.event` for anoth vactory instance but with the same model name', function() {
+            var otherResourceWithTheSameModelName = new ResourceIO('user', {noListeners: true});
+
+            ss.event.listeners('pubsub:user').should.be.an.instanceOf(Array).and.have.lengthOf(1);
+            otherResourceWithTheSameModelName = null;
+        });
+
+        describe('#on', function() {
+            it('should be a function', function() {
+                resource.on.should.be.an.instanceOf(Function);
+            });
+
+            it('should not create any listners in $rootScope.$$listeners if event name not passed', inject(function($rootScope) {
+                resource.on();
+                $rootScope.$$listeners.should.be.eql({});
+            }));
+
+            it('should create a listner in $rootScope.$$listeners', inject(function($rootScope) {
+                resource.on('new', function () {});
+                $rootScope.$$listeners['pubsub:user'].should.be.an.instanceOf(Array).and.have.lengthOf(1);
+            }));
+
+            it('should fire callback on SocketStream event', function (done) {
+                var obj = { id: 4, name: 'Petya'};
+
+                inject(function($socket) {
+                    $socket.rpc('user._mockEventNew');
+                    resource.on('new', function (response) {
+                        response.should.be.equalToData(obj);
+                        done();
+                    });
+                })
+            });
+
+            it('should fire callback on Angular\'s $broadcast event', function (done) {
+                var obj = { id: 4, name: 'Petya'};
+
+                inject(function($rootScope) {
+                    resource.on('new', function (response) {
+                        response.should.be.equalToData(obj);
+                        done();
+                    });
+                    $rootScope.$broadcast('pubsub:user', 'new', obj);
+                })
+            });
+        });
+
+        describe('#off', function() {
+            beforeEach(function(done) {
+                resource.find(done);
+            });
+
+            it('should be a function', function() {
+                resource.off.should.be.an.instanceOf(Function);
+            });
+
+            it('should be remove all the Angular\'s listeners for all the $resourceIO instances', inject(function($rootScope) {
+                resource.off();
+                $rootScope.$$listeners.should.be.eql({});
+            }));
+
+            it('should be remove all the SocketStream\'s listeners for all the $resourceIO instances', function() {
+                resource.off();
+                ss.event.listeners('pubsub:user').should.be.an.instanceOf(Array).and.have.lengthOf(0);
+            });
+        });
+
+        describe('@event', function() {
             var _data;
 
             beforeEach(function(done) {
@@ -100,7 +178,7 @@ describe('$resourceIO', function() {
                             response.should.be.equal(true);
                         })
                         resource.on('new', function(newObject){
-                            newObject.id.should.be.equalToData({id: 4, name: 'Petya'});
+                            newObject.should.be.equalToData({id: 4, name: 'Petya'});
                             done();
                         })
                     });
@@ -114,7 +192,8 @@ describe('$resourceIO', function() {
 
                 beforeEach(function(done) {
                     resource.find(function(err, data) {
-                        (err == null).should.be.equal(true);
+                        // console.log('>>>>>>>>>>', should.exist);
+                        // should.not.exist(err);
                         _data = data;
                         done();
                     });
@@ -143,7 +222,7 @@ describe('$resourceIO', function() {
                 });
             });
 
-            describe('event', function() {
+            describe('@event', function() {
                 var _data;
 
                 beforeEach(function(done) {
@@ -154,7 +233,7 @@ describe('$resourceIO', function() {
                 });
 
                 describe(':new', function() {
-                    it('should not change any of instance', function(done) {
+                    it('should not change any of instance (should do nothing for instances)', function(done) {
                         inject(function($socket) {
                             $socket.rpc('user._mockEventNew').then(function(response) {
                                 response.should.be.equal(true);
@@ -180,7 +259,7 @@ describe('$resourceIO', function() {
                             $socket.rpc('user._mockEventUpdate', updatedUser).then(function() {
                                 _data[1].should.be.equalToData(updatedUser);
                                 _data[0].should.be.equalToData(usersData[0]);
-                                _data[2].should.be.equalToData(usersData[0]);
+                                _data[2].should.be.equalToData(usersData[2]);
 
                                 done();
                             })

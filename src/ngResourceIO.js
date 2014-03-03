@@ -201,12 +201,8 @@
                     ,
                     DEFAULT_EVENTS = {
                         'new'    : {},
-                        'update' : {idField: 'id',               fn: function(obj, newObj) { copy(newObj, obj) } },
-                        'set'    : {idField: 'id', isPath: true, fn: function(obj, data) {
-                            console.log('obj, data', obj, data);
-                            extend(obj, data)
-                            console.log('obj, data', obj, data);
-                        } },
+                        'update' : {idField: 'id',               fn: function(obj, newObj) { copy(newObj, obj); } },
+                        'set'    : {idField: 'id', isPath: true, fn: function(obj, data)   { extend(obj, data); } },
                         'remove' : {idField: 'id'}
                     },
 
@@ -223,42 +219,42 @@
                 EVENT_CALLER = config.SOCKET_EVENT_METHOD ? window[config.SOCKET_INSTANCE][config.SOCKET_EVENT_METHOD] : window[config.SOCKET_EVENT_METHOD];
 
                 function ResourceIOFactory(modelName, settings, actions, events) {
-                    var onName    = [config.SOCKET_MODEL_EVENT_PREFFIX, modelName ].join(config.SOCKET_MODEL_EVENT_DELIMITER),
-                        listeners = [];
+                    var onName    = [config.SOCKET_MODEL_EVENT_PREFFIX, modelName ].join(config.SOCKET_MODEL_EVENT_DELIMITER);
 
-                    actions = extend({}, DEFAULT_ACTIONS, actions);
-                    events  = extend({}, DEFAULT_EVENTS, events);
+                    actions  = extend({}, DEFAULT_ACTIONS, actions);
+                    events   = extend({}, DEFAULT_EVENTS, events);
+                    settings = extend({}, settings);
 
                     function defaultResponseInterceptor(response) {
                         return response.resource;
                     }
 
+                    function socketEventCallback(eventName, response) {
+                        /**
+                         * Broadcasting the event
+                         * Ex.
+                         *     $scope.$on('pubsub:user', function(evnt, eventName, response) {
+                         *         ...do stuff...
+                         *     });
+                         */
+                        $rootScope.$apply(function() {
+                            $rootScope.$broadcast(onName, eventName, response);
+                        });
+                    }
+
                     function turnListenerOn() {
+                        /**
+                         * EVENT_CALLER.listeners(name) - returns array of listeners by name
+                         */
                         if (EVENT_CALLER.listeners(onName).length === 0) {
-                            EVENT_CALLER.on(onName, function (eventName, response) {
-                                /**
-                                 * Broadcasting the event
-                                 * remove the id from the onName: 'pubsub:user:remove:123123' => 'pubsub:user:remove'
-                                 * So the ritem removement from the scope shoul be happen ut of resource object
-                                 *
-                                 * Ex.
-                                 *     $scope.$on('pubsub:test:remove', function(evnt, obj) {
-                                 *         ...do stuff...
-                                 *     });
-                                 */
-                                $rootScope.$apply(function() {
-                                    console.log('regester broadcast', onName, eventName, response);
-                                    $rootScope.$broadcast(onName, eventName, response);
-                                });
-                            });
+                            EVENT_CALLER.on(onName, socketEventCallback);
                             return true;
                         }
                         return false;
                     }
 
                     function ResourceIO(value) {
-                        var self = this,
-                            reatachOff;
+                        var self = this;
 
                         shallowClearAndCopy(value || {}, this);
 
@@ -285,13 +281,7 @@
                                         } else if (eventName === 'remove') {
                                             forEach(self.$_listeners, function(off) {
                                                 off();
-                                            })
-                                            if (typeof reatachOff === 'function') {
-                                                reatachOff();
-                                            }
-
-                                        } else if (eventName === 'reatach') {
-
+                                            });
                                         }
                                     }
                                 }
@@ -299,37 +289,24 @@
                         }
 
                         self.$_listeners[onName] = reatachListener();
-
-                        // reatachOff = $rootScope.$on(onName, function(eventName) {
-                        //     self.$_listeners = reatachListener();
-                        // });
-
                     }
 
-                    ResourceIO['on'] = function(_eventName, cb) {
-                        if (events[_eventName]) {
-                            $rootScope.$on(onName, function ResourceIOListener(event, eventName, response) {
-                                if (_eventName === eventName) {
+                    ResourceIO['on'] = function(eventName, cb) {
+                        if (events[eventName]) {
+                            $rootScope.$on(onName, function ResourceIOListener(_event, _eventName, _response) {
+                                if (eventName === _eventName) {
                                     switch (_eventName) {
                                         case 'new':
-                                            cb(new ResourceIO(response));
+                                            cb(new ResourceIO(_response));
                                             break;
 
                                         default:
-                                            cb(response);
+                                            cb(_response);
+                                            break;
                                     }
                                 }
                             });
                         }
-
-                        /**
-                         * Which means come listener been attached, do we do not watnt to
-                         * call ':reatach' one more time
-                         */
-                        // if (turnListenerOn()) {
-                        //     $rootScope.$broadcast(onName.concat(':reatach'));
-                        //     console.log('$on', $rootScope.$$listeners);
-                        // }
                     }
 
                     /**
@@ -338,61 +315,24 @@
                      * @param  {Function} cb
                      * @return {Void}
                      */
-                    ResourceIO['off'] = function(complite, name) {
-                        var _onName,
-                            _events = events;
-
-                        if (complite) {
-                            _events.reatach = true;
+                    ResourceIO['off'] = function() {
+                        // removing Angular's listeners
+                        if ($rootScope.$$listeners) {
+                            if ($rootScope.$$listeners[onName]) {
+                                delete $rootScope.$$listeners[onName];
+                            }
                         }
 
-                        forEach(_events, function(_event, _name) {
-                            _onName = onName.concat(':'+ _name);
-
-                            if ($rootScope.$$listeners) {
-                                if ($rootScope.$$listeners[_onName]) {
-                                    if (name) {
-                                        if (name === _name) {
-                                            delete $rootScope.$$listeners[_onName]
-                                        }
-                                    }  else {
-                                        delete $rootScope.$$listeners[_onName]
-                                    }
-                                }
-                            }
-
-                            if (EVENT_CALLER.listeners(_onName).length > 0) {
-                                forEach(listeners, function(listner) {
-                                    if (listner.name === _onName) {
-                                        if (name) {
-                                            if (name === _name) {
-                                                console.log('_onName', _onName, listner.name);
-                                                EVENT_CALLER.off(_onName, listner.func);
-                                            }
-                                        }  else {
-                                            console.log('_onName', _onName, listner.name);
-                                            EVENT_CALLER.off(_onName, listner.func);
-                                        }
-                                    }
-                                });
-                            }
-                        });
-                        listeners = [];
-                        console.log('$off', $rootScope.$$listeners);
+                        // removing SocketStream's listeners
+                        if (EVENT_CALLER.listeners(onName).length > 0) {
+                            EVENT_CALLER.off(onName, socketEventCallback);
+                        }
                     }
 
                     ResourceIO.prototype['$on']  = ResourceIO.on;
-                    ResourceIO.prototype['$off'] = function(name) {
-                        forEach(this.$_listeners, function(listner) {
-                            if (name) {
-                                if (listner.name === name) {
-                                    listner.off();
-                                    console.log('off', listner.name);
-                                }
-                            } else {
-                                listner.off();
-                                console.log('off', listner.name);
-                            }
+                    ResourceIO.prototype['$off'] = function() {
+                        forEach(this.$_listeners, function(offFunction) {
+                            offFunction();
                         });
                     };
 
@@ -533,7 +473,9 @@
                         };
                     });
 
-                    turnListenerOn();
+                    if (!settings.noListeners) {
+                        turnListenerOn();
+                    }
 
                     return ResourceIO;
                 }

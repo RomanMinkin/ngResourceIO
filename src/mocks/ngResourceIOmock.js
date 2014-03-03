@@ -9,7 +9,7 @@
  */
 Object.defineProperty(Object.prototype, "equalToData", {
     value: function(expected) {
-        return angular.equals(this, expected);
+        angular.toJson(this.obj).should.be.eql(angular.toJson(expected));
     },
     enumerable: false
-})
+});
