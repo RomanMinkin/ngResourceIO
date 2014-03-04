@@ -1,4 +1,5 @@
-/*global window, console, ss*/
+/*global window, console, require, ss*/
+/*jslint node: true */
 'use strict';
 
 window.ss = require('socketstream');

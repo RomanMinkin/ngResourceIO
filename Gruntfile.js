@@ -15,17 +15,8 @@ module.exports = function(grunt) {
         ss,
         io;
 
-    grunt.loadNpmTasks('grunt-contrib-copy');
-    grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.loadNpmTasks('grunt-contrib-concat');
-    grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.loadNpmTasks('grunt-contrib-jshint');
-    grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-contrib-nodeunit');
-    grunt.loadNpmTasks('grunt-contrib-symlink');
-    grunt.loadNpmTasks('grunt-contrib-connect');
-    grunt.loadNpmTasks('grunt-karma');
-    grunt.loadNpmTasks('grunt-contrib-jasmine');
+    /* Filter all grunt-* dependencies, excluding grunt-cli (multiple matching patterns) */
+    require('matchdep').filterDev(['grunt-*','!grunt-cli']).forEach(grunt.loadNpmTasks);
 
     // Project configuration.
     grunt.initConfig({
@@ -100,6 +91,9 @@ module.exports = function(grunt) {
                 files: {
                     src: [
                         '*.js',
+                        '<%= dirs.app_socketstream %>/*.js',
+                        '<%= dirs.app_socketstream %>/server/**/*.js',
+                        '<%= dirs.app_socketio%>/*.js',
                     ]
                 }
             },
@@ -113,7 +107,10 @@ module.exports = function(grunt) {
                             '<%= dirs.test_libs %>/**',
                             '<%= dirs.app_socketstream_libs %>/**',
                             '<%= dirs.app_socketstream %>/node_modules/**',
+                            '<%= dirs.app_socketstream %>/server/**',
+                            '<%= dirs.app_socketstream %>/**',
                             '<%= dirs.app_socketio_libs%>/**',
+                            '<%= dirs.app_socketio%>/**',
                         ]
                     }
                 ),
@@ -123,6 +120,15 @@ module.exports = function(grunt) {
                         'test/**/*.js'
                     ]
                 }
+            }
+        },
+        jsonlint: {
+            all: {
+                src: [
+                    '*.json',
+                    'src/**/*.json',
+                    'test/**/*.json'
+                ]
             }
         },
         connect: {
@@ -145,6 +151,10 @@ module.exports = function(grunt) {
                 atBegin  : true,
                 interrupt: true,
                 debounceDelay: 1000,
+            },
+            lint: {
+                files: ['src/**/*.js', 'test/**/*.js'],
+                tasks: ['lint']
             },
             unit: {
                 files: ['src/**/*.js', 'test/unit/**/*.js'],
@@ -270,19 +280,24 @@ module.exports = function(grunt) {
      */
     grunt.renameTask('watch', 'monitor');
 
-    grunt.registerTask('default',                                                ['jshint', 'test']);
+    grunt.registerTask('default',                                                ['lint', 'test']);
 
     /* Dev pre-test tasks */
     grunt.registerTask('dev:install',                                            ['clean:cache', 'bower', 'install:modules:socketstream', 'clean:links', 'symlink:libs']);
     grunt.registerTask('dev:update:libs',                                        ['bower', 'clean:links', 'symlink:libs']);
 
+    /* Lint tasks */
+    grunt.registerTask('lint', 'Runs both jshint and jsonlint',                   ['jsonlint', 'jshint']);
+
     /* Test tasks */
-    grunt.registerTask('test', 'Runs all the test once',                         ['test:unit', 'test:socketstream', 'test:socket.io']);
+    grunt.registerTask('test', 'Runs all the test once',                         ['test:unit', 'test:socketstream'/*, 'test:socket.io'*/]);
     grunt.registerTask('test:unit', 'Runs unit tests once',                      ['karma:unit']);
     grunt.registerTask('test:socketstream', 'Single run end-to-end tests for SocketStream App', ['start:socketstream', 'karma:e2eSocketStream']);
     grunt.registerTask('test:socket.io', 'Single run end-to-end tests for Socket.io App', ['start:socket.io', 'karma:e2eSocketIO']);
 
     /* Watch tasks */
+    grunt.registerTask('watch:lint', 'Run and watch for lint',                    ['monitor:lint']);
+    grunt.registerTask('watch:test:unit', 'Run and watch for unit',               ['karma:unitBackground', 'delay', 'monitor:unit']);
     grunt.registerTask('watch:test:unit', 'Run and watch for unit',               ['karma:unitBackground', 'delay', 'monitor:unit']);
     grunt.registerTask('watch:test:socketstream', 'Run end-to-end tests and watching changes for SocketStream App', ['start:socketstream', 'karma:e2eSocketStreamBackground', 'delay', 'monitor:e2eSocketStream']);
     grunt.registerTask('watch:test:socket.io', 'Run end-to-end tests and watching changes for Socket.io App', ['start:socket.io', 'karma:e2eSocketIOBackground', 'delay', 'monitor:e2eSocketIO']);
