@@ -127,6 +127,19 @@ describe('$resourceIO', function() {
                     $rootScope.$broadcast('pubsub:user', 'new', obj);
                 })
             });
+
+            it('should not reatach factory listener by double call', function() {
+                resource.on().should.be.equal(false);
+                ss.event.listeners('pubsub:user').should.be.an.instanceOf(Array).and.have.lengthOf(1);
+            });
+
+            it('should reatach factory listener after #off() call', function() {
+                resource.off();
+
+                resource.on().should.be.equal(true);
+                ss.event.listeners('pubsub:user').should.be.an.instanceOf(Array).and.have.lengthOf(1);
+                $rootScope.$$listeners.should.be.eql({});
+            });
         });
 
         describe('#off', function() {

@@ -1,7 +1,8 @@
 /*global window, angular */
 
 (function( angular ) {
-    "use strict";
+    'use strict';
+
     var $resourceMinErr = angular.$$minErr('ngResourceIO');
 
     /**
@@ -242,7 +243,7 @@
                         });
                     }
 
-                    function turnListenerOn() {
+                    function initializeFactoryListener() {
                         /**
                          * EVENT_CALLER.listeners(name) - returns array of listeners by name
                          */
@@ -292,20 +293,25 @@
                     }
 
                     ResourceIO['on'] = function(eventName, cb) {
-                        if (events[eventName]) {
-                            $rootScope.$on(onName, function ResourceIOListener(_event, _eventName, _response) {
-                                if (eventName === _eventName) {
-                                    switch (_eventName) {
-                                        case 'new':
-                                            cb(new ResourceIO(_response));
-                                            break;
+                        if (!eventName && !cb && this === ResourceIO) {
+                            return initializeFactoryListener();
 
-                                        default:
-                                            cb(_response);
-                                            break;
+                        } else {
+                            if (events[eventName]) {
+                                $rootScope.$on(onName, function ResourceIOListener(_event, _eventName, _response) {
+                                    if (eventName === _eventName) {
+                                        switch (_eventName) {
+                                            case 'new':
+                                                cb(new ResourceIO(_response));
+                                                break;
+
+                                            default:
+                                                cb(_response);
+                                                break;
+                                        }
                                     }
-                                }
-                            });
+                                });
+                            }
                         }
                     }
 
@@ -474,7 +480,7 @@
                     });
 
                     if (!settings.noListeners) {
-                        turnListenerOn();
+                        initializeFactoryListener();
                     }
 
                     return ResourceIO;

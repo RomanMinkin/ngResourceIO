@@ -2,11 +2,7 @@
     'use strict';
 
     describe('$socket', function() {
-        var
-            // rootScope,
-            // deferred,
-            $socketProvider,
-            // defaultConfigName = 'socketstream',
+        var $socketProvider,
             defaults = {
                 "socketstream": {
                     SOCKET_TYPE                    : 'socketstream',    //   Library type

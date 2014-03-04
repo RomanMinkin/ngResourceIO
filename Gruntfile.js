@@ -187,22 +187,20 @@ module.exports = function(grunt) {
                 options: {
                     configFile: './karma-e2e.conf.js',
                     proxies: {
-                        // '/': 'http://localhost:3000/'
                         '/': 'http://localhost:9000/'
                     }
                 },
-                browsers: process.env.TRAVIS ? 'PhantomJS' : grunt.option('browsers') ? grunt.option('browsers').split(',') : ['Chrome']
+                browsers: process.env.TRAVIS ? 'PhantomJS' : grunt.option('browsers') ? grunt.option('browsers').split(',') : ['PhantomJS']
             },
             e2eSocketStreamBackground: {
                 background: true,
                 options: {
                     configFile: './karma-e2e.conf.js',
                     proxies: {
-                        // '/': 'http://localhost:3000/'
                         '/': 'http://localhost:9000/'
                     }
                 },
-                browsers: process.env.TRAVIS ? 'PhantomJS' : grunt.option('browsers') ? grunt.option('browsers').split(',') : ['Chrome']
+                browsers: process.env.TRAVIS ? 'PhantomJS' : grunt.option('browsers') ? grunt.option('browsers').split(',') : ['PhantomJS']
             },
             e2eSocketIO: {
                 singleRun: true,
