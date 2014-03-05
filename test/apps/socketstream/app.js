@@ -11,8 +11,7 @@ ss.client.define('main', {
     'libs/jquery.js',
     'libs/angular.js',
     'libs/angular-route.js',
-    // 'libs/angular-mocks.js',
-    'libs/ngResourceIO.js',
+    'libs/angular-resource-io.js',
     'app'
   ],
   tmpl: '*'

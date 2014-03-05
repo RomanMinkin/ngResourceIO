@@ -117,6 +117,7 @@ module.exports = function(grunt) {
                 ),
                 files: {
                     src: [
+                        '<%= dirs.build %>',
                         'src/**/*.js',
                         'test/**/*.js'
                     ]
@@ -159,15 +160,15 @@ module.exports = function(grunt) {
             },
             unit: {
                 files: ['src/**/*.js', 'test/unit/**/*.js'],
-                tasks: ['karma:unitBackground:run']
+                tasks: ['concat', 'karma:unitBackground:run']
             },
             e2eSocketStream: {
                 files: ['src/**/*.js', 'test/e2e/**/*.js'],
-                tasks: ['karma:e2eSocketStreamBackground:run']
+                tasks: ['concat', 'karma:e2eSocketStreamBackground:run']
             },
             e2eSocketIO: {
                 files: ['src/**/*.js'],
-                tasks: ['karma:e2eSocketIOBackground:run']
+                tasks: ['concat', 'karma:e2eSocketIOBackground:run']
             }
         },
         karma: {
@@ -252,18 +253,18 @@ module.exports = function(grunt) {
                     }
                 ]
             },
-            ngResourceIO: {
+            'angular-resource-io': {
                 files: [
                     {
                         expand: true,
-                        cwd: 'src',
+                        cwd: '<%= dirs.build %>',
                         src: ['*.js'],
                         dest: '<%= dirs.app_socketstream_libs %>',
                         filter: 'isFile'
                     },
                     {
                         expand: true,
-                        cwd: 'src',
+                        cwd: '<%= dirs.build %>',
                         src: ['*.js'],
                         dest: '<%= dirs.app_socketio_libs %>',
                         filter: 'isFile'
@@ -280,6 +281,7 @@ module.exports = function(grunt) {
     grunt.renameTask('watch', 'monitor');
 
     grunt.registerTask('default',                                                ['lint', 'test']);
+    grunt.registerTask('build',                                                  ['concat', 'symlink',]);
 
     /* Dev pre-test tasks */
     grunt.registerTask('dev:install',                                            ['clean:cache', 'bower', 'install:modules:socketstream', 'clean:links', 'symlink:libs']);
