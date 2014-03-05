@@ -12,6 +12,7 @@ module.exports = function(grunt) {
         util      = require('util'),
         path      = require('path'),
         shjs      = require('shelljs'),
+        browsers  = grunt.option('browsers') ? grunt.option('browsers').split(',') : ['PhantomJS'],
         ss,
         io;
 
@@ -176,11 +177,11 @@ module.exports = function(grunt) {
             },
             unit: {
                 singleRun: true,
-                browsers: process.env.TRAVIS ? 'PhantomJS' : grunt.option('browsers') ? grunt.option('browsers').split(',') : ['PhantomJS']
+                browsers: browsers
             },
             unitBackground: {
                 background: true,
-                browsers: process.env.TRAVIS ? 'PhantomJS' : grunt.option('browsers') ? grunt.option('browsers').split(',') : ['PhantomJS']
+                browsers: browsers
             },
             e2eSocketStream: {
                 singleRun: true,
@@ -190,7 +191,7 @@ module.exports = function(grunt) {
                         '/': 'http://localhost:9000/'
                     }
                 },
-                browsers: process.env.TRAVIS ? 'PhantomJS' : grunt.option('browsers') ? grunt.option('browsers').split(',') : ['PhantomJS']
+                browsers: browsers
             },
             e2eSocketStreamBackground: {
                 background: true,
@@ -200,7 +201,7 @@ module.exports = function(grunt) {
                         '/': 'http://localhost:9000/'
                     }
                 },
-                browsers: process.env.TRAVIS ? 'PhantomJS' : grunt.option('browsers') ? grunt.option('browsers').split(',') : ['PhantomJS']
+                browsers: browsers
             },
             e2eSocketIO: {
                 singleRun: true,
@@ -215,7 +216,7 @@ module.exports = function(grunt) {
                         '/': 'http://localhost:3001/'
                     }
                 },
-                browsers: process.env.TRAVIS ? 'PhantomJS' : grunt.option('browsers') ? grunt.option('browsers').split(',') : ['Chrome']
+                browsers: browsers
             },
             e2eSocketIOBackground: {
                 background: true,
@@ -229,7 +230,7 @@ module.exports = function(grunt) {
                         '/': 'http://localhost:3001/'
                     }
                 },
-                browsers: process.env.TRAVIS ? 'PhantomJS' : grunt.option('browsers') ? grunt.option('browsers').split(',') : ['Chrome']
+                browsers: browsers
             }
         },
         symlink: {
