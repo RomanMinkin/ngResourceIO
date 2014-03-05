@@ -79,7 +79,7 @@ module.exports = function(grunt) {
                 }
             }
         },
-        release: {
+        copy: {
             files: ['<%= pkg.name %>.js', '<%= pkg.name %>.min.js'],
             src  : '<%= dirs.build %>',
             dest : 'release'
@@ -281,7 +281,8 @@ module.exports = function(grunt) {
     grunt.renameTask('watch', 'monitor');
 
     grunt.registerTask('default',                                                ['lint', 'test']);
-    grunt.registerTask('build',                                                  ['concat', 'symlink',]);
+    grunt.registerTask('build',                                                  ['clean:build', 'concat']);
+    grunt.registerTask('install',                                                ['install:modules:socketstream', 'clean:links', 'symlink:libs']);
 
     /* Dev pre-test tasks */
     grunt.registerTask('dev:install',                                            ['clean:cache', 'bower', 'install:modules:socketstream', 'clean:links', 'symlink:libs']);

@@ -1,6 +1,5 @@
-/*global window, angular */
-
 (function( angular ) {
+    /*global window, angular */
     'use strict';
 
     var $resourceMinErr = angular.$$minErr('ngResourceIO');
