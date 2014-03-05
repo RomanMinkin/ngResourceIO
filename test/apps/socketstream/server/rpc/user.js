@@ -25,6 +25,9 @@ exports.actions = function(req, res, ss) {
             res(null, users);
             res(null, {id: users[0].id});
         },
+        customAction: function() {
+            res(null, users);
+        },
 
         _mockEventNew: function() {
             ss.publish.all('pubsub:user', 'new', newUser);
@@ -45,5 +48,9 @@ exports.actions = function(req, res, ss) {
             ss.publish.all('pubsub:user', 'remove', user);
             res(null, true);
         },
+        _mockCustomEvent: function(data) {
+            ss.publish.all('pubsub:user', 'customEvent', data);
+            res(null, true);
+        }
     };
 };

@@ -63,6 +63,10 @@ describe('$resourceIO', function() {
             resource   = new ResourceIO('user');
         }));
 
+        afterEach(function() {
+            resource.off();
+        });
+
         it('should return a new resource instance', function() {
             resource.should.be.an.instanceOf(Function);
         });
@@ -75,7 +79,7 @@ describe('$resourceIO', function() {
             ss.event.listeners('pubsub:user').should.be.an.instanceOf(Array).and.have.lengthOf(1);
         });
 
-        it('should not create a listener for `ss.event` if setting `noListeners` passed', function() {
+        it('should not create a listener for `ss.event` if parameter `{noListeners: true}` passed', function() {
             ss.event.removeAllListeners();
             resource = new ResourceIO('user', {noListeners: true});
 
@@ -87,6 +91,49 @@ describe('$resourceIO', function() {
 
             ss.event.listeners('pubsub:user').should.be.an.instanceOf(Array).and.have.lengthOf(1);
             otherResourceWithTheSameModelName = null;
+        });
+
+        it('should support custom method as a parameter', function(done) {
+            resource = new ResourceIO('user', {}, {'customAction'  : {method:'remove', isArray: true}});
+
+            resource.customAction(function(err, data) {
+                data.should.be.equalToData(usersData);
+                done();
+            });
+        });
+
+        it('should support custom event as a parameter with isNew = false', function(done) {
+            var data = {id: 5};
+
+            resource = new ResourceIO('user', {}, {}, {'customEvent' : {isNew: false}});
+
+            inject(function($socket) {
+                resource.on('customEvent', function(_data){
+                    _data.should.be.equalToData(data);
+                    _data.should.be.an.instanceOf(Object);
+                    done();
+                })
+                $socket.rpc('user._mockCustomEvent', data).then(function(response) {
+                    response.should.be.equal(true);
+                })
+            });
+        });
+
+        it('should support custom event as a parameter with isNew = true', function(done) {
+            var data = {id: 5};
+
+            resource = new ResourceIO('user', {}, {}, {'customEvent' : {isNew: true}});
+
+            inject(function($socket) {
+                resource.on('customEvent', function(_data){
+                    _data.should.be.equalToData(data);
+                    _data.should.be.an.instanceOf(resource);
+                    done();
+                })
+                $socket.rpc('user._mockCustomEvent', data).then(function(response) {
+                    response.should.be.equal(true);
+                })
+            });
         });
 
         describe('#on', function() {

@@ -201,7 +201,7 @@
                     }
                     ,
                     DEFAULT_EVENTS = {
-                        'new'    : {},
+                        'new'    : {isNew: true},
                         'update' : {idField: 'id',               fn: function(obj, newObj) { copy(newObj, obj); } },
                         'set'    : {idField: 'id', isPath: true, fn: function(obj, data)   { extend(obj, data); } },
                         'remove' : {idField: 'id'}
@@ -300,14 +300,11 @@
                             if (events[eventName]) {
                                 $rootScope.$on(onName, function ResourceIOListener(_event, _eventName, _response) {
                                     if (eventName === _eventName) {
-                                        switch (_eventName) {
-                                            case 'new':
-                                                cb(new ResourceIO(_response));
-                                                break;
+                                        if (events[eventName].isNew) {
+                                            cb(new ResourceIO(_response));
 
-                                            default:
-                                                cb(_response);
-                                                break;
+                                        } else {
+                                            cb(_response);
                                         }
                                     }
                                 });
