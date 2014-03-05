@@ -266,7 +266,7 @@
                          *
                          * @return {Function} return off() function for removing listener
                          */
-                        function reatachListener() {
+                        self.reatachEventsListener = function() {
                             return $rootScope.$on(onName, function ResourceIOinstanceListener(event, eventName, response) {
                                 var _event, _idField;
 
@@ -289,7 +289,7 @@
                             });
                         }
 
-                        self.$_listeners[onName] = reatachListener();
+                        self.$_listeners[onName] = self.reatachEventsListener();
                     }
 
                     ResourceIO['on'] = function(eventName, cb) {
@@ -335,11 +335,22 @@
                         }
                     }
 
-                    ResourceIO.prototype['$on']  = ResourceIO.on;
-                    ResourceIO.prototype['$off'] = function() {
+                    ResourceIO.prototype['on']  = function() {
+                        if (this.$_listeners[onName]) {
+                            return false;
+
+                        } else {
+                            this.$_listeners[onName] = this.reatachEventsListener();
+                            return true;
+                        }
+                    }
+
+                    ResourceIO.prototype['off'] = function() {
                         forEach(this.$_listeners, function(offFunction) {
                             offFunction();
                         });
+
+                        this.$_listeners = {};
                     };
 
                     forEach(actions, function(action, name) {

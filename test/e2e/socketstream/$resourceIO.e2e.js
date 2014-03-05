@@ -163,11 +163,11 @@ describe('$resourceIO', function() {
         });
 
         describe('@event', function() {
-            var _data;
+            var _instances;
 
             beforeEach(function(done) {
                 resource.find(function(err, data) {
-                    _data = data;
+                    _instances = data;
                     done();
                 });
             });
@@ -201,13 +201,13 @@ describe('$resourceIO', function() {
 
         describe('$resourceIO#instance', function() {
             describe('#find', function() {
-                var _data;
+                var _instances;
 
                 beforeEach(function(done) {
                     resource.find(function(err, data) {
                         // console.log('>>>>>>>>>>', should.exist);
                         // should.not.exist(err);
-                        _data = data;
+                        _instances = data;
                         done();
                     });
                 });
@@ -216,15 +216,20 @@ describe('$resourceIO', function() {
                     resource.find.should.be.an.instanceOf(Function);
                 });
 
+                it('should have one default listener attached', function() {
+                    _instances[0].$_listeners.should.be.instanceOf(Object).and.have.property('pubsub:user');
+                    _instances[0].$_listeners['pubsub:user'].should.be.an.instanceOf(Function);
+                });
+
                 it('should query array with resources and each resource object should be ab instance of new ResourceIO()', function() {
-                    _data.should.be.an.instanceOf(Array).and.have.lengthOf(3);
-                    _data[0].should.be.an.instanceOf(resource);
-                    _data[1].should.be.an.instanceOf(resource);
-                    _data[2].should.be.an.instanceOf(resource);
+                    _instances.should.be.an.instanceOf(Array).and.have.lengthOf(3);
+                    _instances[0].should.be.an.instanceOf(resource);
+                    _instances[1].should.be.an.instanceOf(resource);
+                    _instances[2].should.be.an.instanceOf(resource);
                 });
 
                 it('should query array with resources and each resource should contain actual data from back end', function() {
-                    _data.should.be.equalToData(usersData);
+                    _instances.should.be.equalToData(usersData);
                 });
 
                 it('should create listener for each new $resourceIO instance', function(done) {
@@ -236,11 +241,11 @@ describe('$resourceIO', function() {
             });
 
             describe('@event', function() {
-                var _data;
+                var _instances;
 
                 beforeEach(function(done) {
                     resource.find(function(err, data) {
-                        _data = data;
+                        _instances = data;
                         done();
                     });
                 });
@@ -252,7 +257,7 @@ describe('$resourceIO', function() {
                                 response.should.be.equal(true);
                             });
                             resource.on('new', function(){
-                                _data.should.be.equalToData(usersData);
+                                _instances.should.be.equalToData(usersData);
                                 done();
                             })
                         });
@@ -270,9 +275,9 @@ describe('$resourceIO', function() {
                             ;
 
                             $socket.rpc('user._mockEventUpdate', updatedUser).then(function() {
-                                _data[1].should.be.equalToData(updatedUser);
-                                _data[0].should.be.equalToData(usersData[0]);
-                                _data[2].should.be.equalToData(usersData[2]);
+                                _instances[1].should.be.equalToData(updatedUser);
+                                _instances[0].should.be.equalToData(usersData[0]);
+                                _instances[2].should.be.equalToData(usersData[2]);
 
                                 done();
                             })
@@ -284,15 +289,15 @@ describe('$resourceIO', function() {
                     it('should set a new value to existing field', function(done) {
                         inject(function($socket) {
                             var dataToSet = {
-                                    id: _data[0].id,
+                                    id: _instances[0].id,
                                     name: 'my new Name'
                                 }
                             ;
 
                             $socket.rpc('user._mockEventSet', dataToSet).then(function() {
-                                _data[0].should.be.equalToData(dataToSet);
-                                _data[1].should.be.equalToData(usersData[1]);
-                                _data[2].should.be.equalToData(usersData[2]);
+                                _instances[0].should.be.equalToData(dataToSet);
+                                _instances[1].should.be.equalToData(usersData[1]);
+                                _instances[2].should.be.equalToData(usersData[2]);
 
                                 done();
                             })
@@ -308,9 +313,9 @@ describe('$resourceIO', function() {
                             ;
 
                             $socket.rpc('user._mockEventSet', dataToUpdate).then(function() {
-                                _data[1].id.should.be.equal(dataToUpdate.id);
-                                _data[1].name.should.be.equal('Kolya');
-                                _data[1].address.should.be.equal(dataToUpdate.address);
+                                _instances[1].id.should.be.equal(dataToUpdate.id);
+                                _instances[1].name.should.be.equal('Kolya');
+                                _instances[1].address.should.be.equal(dataToUpdate.address);
                                 done();
                             })
                         });
@@ -373,19 +378,62 @@ describe('$resourceIO', function() {
             });
 
             describe('#off', function() {
+                var _instance;
+
+                beforeEach(function(done) {
+                    resource.find(function(err, data) {
+                        _instance = data[0];
+                        done();
+                    });
+                });
+
                 it('should be a function', function() {
-                    resource.off.should.be.an.instanceOf(Function);
+                    _instance.off.should.be.an.instanceOf(Function);
+                });
+
+                it('should turn off all the instance listeners', function() {
+                    _instance.off();
+                    _instance.$_listeners.should.be.eql({});
                 });
             });
 
             describe('#on', function() {
-                it('should be a function', function() {
-                    resource.on.should.be.an.instanceOf(Function);
+                var _instance;
+
+                beforeEach(function(done) {
+                    resource.find(function(err, data) {
+                        _instance = data[0];
+                        done();
+                    });
                 });
 
-                it('should not create any listners in $rootScope.$$listeners by default', function() {
-                    resource.on();
-                    $rootScope.$$listeners.should.be.eql({});
+                it('should be a function', function() {
+                    _instance.on.should.be.an.instanceOf(Function);
+                });
+
+                it('should change itself\'s listener', function() {
+                    var oroginListeners = _instance.$_listeners;
+
+                    _instance.on().should.be.equal(false);
+
+                    _instance.$_listeners.should.be.instanceOf(Object).and.have.property('pubsub:user');
+                    oroginListeners.should.be.equal(_instance.$_listeners)
+                });
+
+                it('should return true on call if listener has been turned $off() before', function() {
+                    var oroginListeners = _instance.$_listeners;
+
+                    _instance.off();
+                    _instance.$_listeners.should.be.instanceOf(Object).and.not.have.property('pubsub:user');
+
+                    _instance.on().should.be.equal(true);
+                    _instance.$_listeners.should.be.instanceOf(Object).and.have.property('pubsub:user');
+
+                    /**
+                     * `_instance.$_listeners` should be a new object,
+                     *  because we reasigned a new listener by calling _instance.on();
+                     */
+                    oroginListeners.should.not.be.equal(_instance.$_listeners);
                 });
             });
         });
