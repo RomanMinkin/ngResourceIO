@@ -176,11 +176,11 @@ module.exports = function(grunt) {
             },
             unit: {
                 singleRun: true,
-                browsers: grunt.option('browsers') ? grunt.option('browsers').split(',') : (['PhantomJS' || 'Firefox' || 'Chrome'])
+                browsers: process.env.TRAVIS ? 'PhantomJS' : grunt.option('browsers') ? grunt.option('browsers').split(',') : ['PhantomJS']
             },
             unitBackground: {
                 background: true,
-                browsers: grunt.option('browsers') ? grunt.option('browsers').split(',') : (['PhantomJS' || 'Firefox' || 'Chrome'])
+                browsers: process.env.TRAVIS ? 'PhantomJS' : grunt.option('browsers') ? grunt.option('browsers').split(',') : ['PhantomJS']
             },
             e2eSocketStream: {
                 singleRun: true,
