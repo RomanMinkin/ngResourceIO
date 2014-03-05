@@ -64,7 +64,7 @@ module.exports = function(grunt) {
                 separator: ';',
                 banner: '<%= meta.banner %>\n'
             },
-            dist: {
+            build: {
                 src: ['src/*.js'],
                 dest: '<%= dirs.build %>/<%= pkg.name %>.js'
             },
@@ -73,16 +73,18 @@ module.exports = function(grunt) {
             options: {
                 banner: '<%= meta.banner %>\n'
             },
-            build: {
+            main: {
                 files: {
-                    '<%= dirs.build %>/<%= pkg.name %>.min.js': ['<banner:meta.banner>', '<%= build.dest %>']
+                    '<%= dirs.build %>/<%= pkg.name %>.min.js': ['<%= dirs.build %>/<%= pkg.name %>.js']
                 }
             }
         },
         copy: {
-            files: ['<%= pkg.name %>.js', '<%= pkg.name %>.min.js'],
-            src  : '<%= dirs.build %>',
-            dest : 'release'
+            release: {
+                src  : '<%= dirs.build %>/',
+                files: ['<%= pkg.name %>.js', '<%= pkg.name %>.min.js'],
+                dest : 'release/'
+            }
         },
         jshint: {
             server: {
