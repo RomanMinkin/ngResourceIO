@@ -283,7 +283,7 @@ module.exports = function(grunt) {
     grunt.renameTask('watch', 'monitor');
 
     grunt.registerTask('default',                                                ['lint', 'test']);
-    grunt.registerTask('build',                                                  ['clean:build', 'concat']);
+    grunt.registerTask('build',                                                  ['clean:build', 'concat', 'uglify']);
     grunt.registerTask('install',                                                ['install:modules:socketstream', 'clean:links', 'symlink:libs']);
 
     /* Dev pre-test tasks */
@@ -311,7 +311,7 @@ module.exports = function(grunt) {
     });
 
     /* release build tasks */
-    // grunt.registerTask('release', 'Tag and perform a release', ['prepare-release', 'dist', 'perform-release']);
+    grunt.registerTask('release', 'Tag and perform a release', ['prepare-release', 'build', 'perform-release']);
 
     /* bower */
     grunt.registerTask('bower', 'Download client libraries from Bower repository and copy them across the project', ['clean:bowerComponents', 'bower-install', 'clean:testLibs', 'bower-copy', 'clean:bowerComponents']);
