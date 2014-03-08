@@ -114,12 +114,13 @@ module.exports = function(grunt) {
                             '<%= dirs.app_socketstream %>/**',
                             '<%= dirs.app_socketio_libs%>/**',
                             '<%= dirs.app_socketio%>/**',
+                            '<%= dirs.build %>/**/*.min.js',
                         ]
                     }
                 ),
                 files: {
                     src: [
-                        '<%= dirs.build %>',
+                        '<%= dirs.build %>/',
                         'src/**/*.js',
                         'test/**/*.js'
                     ]
@@ -260,14 +261,14 @@ module.exports = function(grunt) {
                     {
                         expand: true,
                         cwd: '<%= dirs.build %>',
-                        src: ['*.js'],
+                        src: ['angular-resource-io.js'],
                         dest: '<%= dirs.app_socketstream_libs %>',
                         filter: 'isFile'
                     },
                     {
                         expand: true,
                         cwd: '<%= dirs.build %>',
-                        src: ['*.js'],
+                        src: ['angular-resource-io.js'],
                         dest: '<%= dirs.app_socketio_libs %>',
                         filter: 'isFile'
                     }
@@ -284,11 +285,11 @@ module.exports = function(grunt) {
 
     grunt.registerTask('default',                                                ['lint', 'test']);
     grunt.registerTask('build',                                                  ['clean:build', 'concat', 'uglify']);
-    grunt.registerTask('install',                                                ['install:modules:socketstream', 'clean:links', 'symlink:libs']);
+    grunt.registerTask('install',                                                ['install:modules:socketstream', 'clean:links', 'symlink']);
 
     /* Dev pre-test tasks */
-    grunt.registerTask('dev:install',                                            ['clean:cache', 'bower', 'install:modules:socketstream', 'clean:links', 'symlink:libs']);
-    grunt.registerTask('dev:update:libs',                                        ['bower', 'clean:links', 'symlink:libs']);
+    grunt.registerTask('dev:install',                                            ['clean:cache', 'bower', 'install:modules:socketstream', 'clean:links', 'symlink']);
+    grunt.registerTask('dev:update:libs',                                        ['bower', 'clean:links', 'symlink']);
 
     /* Lint tasks */
     grunt.registerTask('lint', 'Runs both jshint and jsonlint',                   ['jsonlint', 'jshint']);
