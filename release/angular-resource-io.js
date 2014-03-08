@@ -1,7 +1,7 @@
 /*!
  * Module for Angular.js framework, a factory which creates a resource object that lets interact with server-side data sources by using  WebSockets as  transport layer.
  *
- * @version v0.0.1
+ * @version v0.0.2
  * @link https://github.com/RomanMinkin/ngResourceIO
  * @author Roman Minkin <minkinroman@gmail.com>
  * @license MIT License, https://raw.github.com/RomanMinkin/ngResourceIO/master/LICENSE
